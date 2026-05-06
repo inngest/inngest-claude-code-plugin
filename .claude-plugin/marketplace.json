@@ -1,0 +1,30 @@
+{
+  "_": "See reference: https://code.claude.com/docs/en/plugin-marketplaces#marketplace-schema",
+  "name": "inngest-claude-code-plugin",
+  "metadata": {
+    "description": "Official Inngest plugin for Claude Code"
+  },
+  "owner": {
+    "name": "Inngest, Inc.",
+    "email": "hello@inngest.com"
+  },
+  "plugins": [
+    {
+      "name": "inngest",
+      "description": "The official Inngest plugin for Claude Code. Skills, MCP server, commands, and agents for building reliable AI workflows and durable functions on Inngest.",
+      "category": "development",
+      "source": "./",
+      "skills": [
+        "./skills/inngest-setup",
+        "./skills/inngest-durable-functions",
+        "./skills/inngest-steps",
+        "./skills/inngest-events",
+        "./skills/inngest-flow-control",
+        "./skills/inngest-middleware",
+        "./skills/inngest-realtime"
+      ],
+      "repository": "https://github.com/inngest/inngest-claude-code-plugin",
+      "homepage": "https://www.inngest.com/docs/ai-dev-tools/claude-code-plugin"
+    }
+  ]
+}
