@@ -1,6 +1,5 @@
 <p align="center">
-  <!-- TODO: replace with Inngest logo asset -->
-  <img src="assets/inngest-logo.svg" alt="Inngest" width="320">
+  <img src="assets/inngest-logo.png" alt="Inngest" width="200">
 </p>
 
 # Inngest Plugin for Claude Code
