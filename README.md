@@ -1,5 +1,8 @@
 <p align="center">
-  <img src="assets/inngest-wordmark.png" alt="Inngest" width="280">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/inngest-wordmark-light.png">
+    <img src="assets/inngest-wordmark.png" alt="Inngest" width="280">
+  </picture>
 </p>
 
 # Inngest Plugin for Claude Code
