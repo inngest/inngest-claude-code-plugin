@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/inngest-logo.png" alt="Inngest" width="200">
+  <img src="assets/inngest-wordmark.png" alt="Inngest" width="280">
 </p>
 
 # Inngest Plugin for Claude Code
