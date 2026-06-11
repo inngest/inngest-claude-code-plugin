@@ -21,7 +21,11 @@
         "./skills/inngest-events",
         "./skills/inngest-flow-control",
         "./skills/inngest-middleware",
-        "./skills/inngest-realtime"
+        "./skills/inngest-realtime",
+        "./skills/inngest-api"
+      ],
+      "commands": [
+        "./commands/debug-run.md"
       ],
       "repository": "https://github.com/inngest/inngest-claude-code-plugin",
       "homepage": "https://www.inngest.com/docs/ai-dev-tools/claude-code-plugin"

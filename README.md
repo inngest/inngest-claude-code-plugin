@@ -15,10 +15,12 @@ The official Inngest plugin for Claude Code. One install, and Claude Code knows 
 
 ## What's included
 
-- **7 skills** covering setup, events, durable functions, steps, flow control, middleware, and realtime — Claude Code loads the right one automatically based on what you're building.
+- **8 skills** covering setup, events, durable functions, steps, flow control, middleware, realtime, and the CLI + v2 REST API — Claude Code loads the right one automatically based on what you're building.
+- **Full API access, agent-first.** The `inngest-api` skill teaches the agent the entire `inngest-cli api` surface and v2 REST API — runs, traces, invocation, syncs, Insights SQL — including how to bootstrap auth and discover run/app/function IDs on its own. The only human step is creating an API key.
+- **`/inngest:debug-run` command** — hand Claude Code a run ID and it pulls the trace, finds the failing step, fixes the code, and verifies with a local invoke.
 - **MCP server** for the local Inngest dev server. Claude Code can inspect runs, events, and function state on your machine while you work.
 - **Eval harness** so you can verify the skills are actually steering Claude Code on your codebase (and contribute new prompts back).
-- **More on the way** — commands, agents, and migrators are tracked in [ROADMAP.md](./ROADMAP.md).
+- **More on the way** — agents and migrators are tracked in [ROADMAP.md](./ROADMAP.md).
 
 ## Installation
 
@@ -69,6 +71,35 @@ claude --plugin-dir /path/to/inngest-claude-code-plugin
 | [`inngest-flow-control`](./skills/inngest-flow-control/) | Concurrency, throttle, rate limit, debounce, priority, singleton, batching | Handling rate limits, deduping bursts, per-tenant fairness |
 | [`inngest-middleware`](./skills/inngest-middleware/) | Lifecycle, dependency injection, Sentry + encryption middleware, custom middleware | Cross-cutting concerns: logging, tracing, DI, encryption |
 | [`inngest-realtime`](./skills/inngest-realtime/) | v4 native realtime, channels, subscription tokens, `useRealtime` hook, SSE | Streaming workflow updates to a UI in real time |
+| [`inngest-api`](./skills/inngest-api/) | `inngest-cli api` commands, v2 REST API, API keys, run traces, direct invocation, app syncs, Insights SQL | Debugging failed runs, scripting against Inngest, CI/CD |
+
+## Debug runs from the terminal
+
+The [`inngest-api`](./skills/inngest-api/) skill gives the agent programmatic access to real execution data through the [Inngest CLI's `api` commands](https://www.inngest.com/docs/cli) and the [v2 REST API](https://api-docs.inngest.com/):
+
+```bash
+# Run summary
+npx inngest-cli@latest api --prod get-function-run 01KTCTWT8XDEGWDMVX3Q9M69ND
+
+# Full step trace, with outputs
+npx inngest-cli@latest api --prod get-function-trace 01KTCTWT8XDEGWDMVX3Q9M69ND --include-output
+
+# Runs triggered by an event
+npx inngest-cli@latest api --prod get-event-runs 01KTCTWSZJEKAFEDA4F9GYHFQW --limit 5
+
+# Invoke a function directly
+npx inngest-cli@latest api invoke-function my-app my-function --data '{"message": "hello"}'
+```
+
+The CLI targets the local dev server by default (no API key needed); `--prod` targets Inngest Cloud with an [API key](https://www.inngest.com/docs/platform/api-keys) from `$INNGEST_API_KEY`. The skill ships complete references for [every CLI command](./skills/inngest-api/references/cli-commands.md) and [every v2 endpoint](./skills/inngest-api/references/rest-api-v2.md), so the agent can work the whole surface — including finding run IDs itself via Insights SQL — without a human driving.
+
+Or just run the command:
+
+```
+/inngest:debug-run 01KTCTWT8XDEGWDMVX3Q9M69ND --prod
+```
+
+Claude Code pulls the trace, isolates the failed step, reads the actual error, fixes the code, and verifies the fix by invoking the function on your dev server.
 
 ## Dev server MCP
 
@@ -117,6 +148,15 @@ This lets the agent inspect runs, events, and function state on your local dev s
 ```
 
 → Plugin sets up a typed channel, publishes from inside `step.run`, mints a subscription token via a server action, and writes the client component using the `useRealtime` hook.
+
+### Debug a production failure from a log line
+
+```
+"This run failed in production: 01KTCTWT8XDEGWDMVX3Q9M69ND. Figure out why
+ and fix it."
+```
+
+→ Plugin pulls the run summary and full step trace via `inngest-cli api`, isolates the `FAILED` span, reads the real error output, fixes the step code, and verifies by invoking the function locally.
 
 ## Skills source of truth
 
