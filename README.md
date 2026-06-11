@@ -7,20 +7,21 @@
 
 # Inngest Plugin for Claude Code
 
-The official Inngest plugin for Claude Code. One install, and Claude Code knows how to build reliable durable functions, design event-driven workflows, configure flow control, stream realtime updates, run the Inngest CLI and Dev Server, debug runs with `inngest api`, and fall back to REST API v2 with [Inngest](https://www.inngest.com).
+The official Inngest plugin for Claude Code. One install, and Claude Code knows how to build reliable durable functions, design event-driven workflows, configure flow control, stream realtime updates, build durable AI agents, run the Inngest CLI and Dev Server, debug runs with `inngest api`, audit existing codebases for durability gaps, and migrate from SDK v3 to v4 with [Inngest](https://www.inngest.com).
 
-> **Beta:** v0.2.0 is the current public beta. We'd love your feedback — [open an issue](https://github.com/inngest/inngest-claude-code-plugin/issues), drop into our [Discord](https://www.inngest.com/discord), or ping [@inngest](https://twitter.com/inngest) on socials.
+> **Beta:** v0.3.0 is the current public beta. We'd love your feedback — [open an issue](https://github.com/inngest/inngest-claude-code-plugin/issues), drop into our [Discord](https://www.inngest.com/discord), or ping [@inngest](https://twitter.com/inngest) on socials.
 
 <!-- TODO: hero gif showing the plugin in action -->
 
 ## What's included
 
-- **10 skills** covering setup, events, durable functions, steps, flow control, middleware, realtime, CLI/dev-server workflows, API CLI operations, and REST API fallback — Claude Code loads the right one automatically based on what you're building.
+- **13 skills** covering setup, events, durable functions, steps, flow control, middleware, realtime, AI agents, CLI/dev-server workflows, API CLI operations, REST API fallback, brownfield audits, and v3→v4 migration — Claude Code loads the right one automatically based on what you're building.
 - **Full API access, agent-first.** The `inngest-api-cli` skill teaches the agent the `inngest api` surface — runs, traces, invocation, syncs, Insights SQL — including how to bootstrap auth and discover run/app/function IDs on its own. `inngest-api` is reserved for raw REST API v2/OpenAPI fallback. The only human step is creating an API key.
 - **`/inngest:debug-run` command** — hand Claude Code a run ID and it pulls the trace, finds the failing step, fixes the code, and verifies with a local invoke.
+- **`/inngest:audit` command** — point Claude Code at an existing codebase and it finds durability gaps (polling loops, manual retries, fire-and-forget promises, queue libraries), prioritizes them, and proposes Inngest refactors.
 - **MCP server** for the local Inngest dev server. Claude Code can inspect runs, events, and function state on your machine while you work.
 - **Eval harness** so you can verify the skills are actually steering Claude Code on your codebase (and contribute new prompts back).
-- **More on the way** — agents and migrators are tracked in [ROADMAP.md](./ROADMAP.md).
+- **More on the way** — competitor migrations (Temporal, Trigger.dev) and a production-side MCP server are tracked in [ROADMAP.md](./ROADMAP.md).
 
 ## Installation
 
@@ -74,6 +75,9 @@ claude --plugin-dir /path/to/inngest-claude-code-plugin
 | [`inngest-cli`](./skills/inngest-cli/) | CLI and Dev Server workflows: `inngest dev`, local testing, Docker, MCP setup, deployment checks, self-hosted `inngest start` | Local development, testing, self-hosted server operations |
 | [`inngest-api-cli`](./skills/inngest-api-cli/) | `inngest api` commands, API keys, run traces, direct invocation, app syncs, Insights SQL | Debugging failed runs, scripting against Inngest, CI/CD |
 | [`inngest-api`](./skills/inngest-api/) | REST API v2 and OpenAPI fallback | Raw HTTP, OpenAPI, endpoint request shapes |
+| [`inngest-agents`](./skills/inngest-agents/) | AgentKit, `step.ai`, tool calls, multi-agent networks, human approval, realtime progress | Building durable AI agents and agentic workflows |
+| [`inngest-brownfield-audit`](./skills/inngest-brownfield-audit/) | Repo discovery, durability anti-pattern detection, incremental integration planning | Introducing Inngest to an existing codebase |
+| [`inngest-v3-v4-migration`](./skills/inngest-v3-v4-migration/) | Usage detection, trigger/schema/serve/realtime API changes, verification | Upgrading from SDK v3 to v4, fixing mixed v3/v4 usage |
 
 ## Debug runs from the terminal
 
@@ -160,6 +164,22 @@ This lets the agent inspect runs, events, and function state on your local dev s
 
 → Plugin pulls the run summary and full step trace via `inngest api`, isolates the `FAILED` span, reads the real error output, fixes the step code, and verifies by invoking the function locally.
 
+### Find the durability gaps in a legacy codebase
+
+```
+/inngest:audit
+```
+
+→ Plugin maps the repo, flags polling loops, manual retries, `setTimeout` scheduling, fire-and-forget promises, and queue libraries, then produces a prioritized report with a specific Inngest refactor per hotspot. Add `--apply` to refactor highest-severity first, with tests.
+
+### Upgrade from SDK v3 to v4
+
+```
+"We're on inngest v3. Upgrade us to v4."
+```
+
+→ Plugin detects current usage, moves triggers into `createFunction` options, replaces `EventSchemas`, updates serve options and realtime imports, rewrites `step.invoke` string IDs, and verifies the result.
+
 ## Skills source of truth
 
 The skills in this plugin are mirrored from [`inngest/inngest-skills`](https://github.com/inngest/inngest-skills) — that's where they're authored and where skills.sh users install them. This plugin pulls them in via `scripts/sync-skills.sh` so the Claude Code experience stays in lockstep with the skills.sh experience.
@@ -177,7 +197,7 @@ See [`eval/README.md`](./eval/README.md) for prompt format, judge config, and ho
 
 ## Beta feedback
 
-This is v0.2.0. We're shipping early to learn from real usage:
+This is v0.3.0. We're shipping early to learn from real usage:
 
 - **What's missing:** open a [GitHub issue](https://github.com/inngest/inngest-claude-code-plugin/issues) — even a one-liner helps.
 - **What's broken:** same place. Include the prompt and the skill that fired (or didn't).

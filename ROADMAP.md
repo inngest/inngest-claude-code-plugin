@@ -5,11 +5,12 @@ and the full skill inventory.
 
 ---
 
-## Today (v0.2.0)
+## Today (v0.3.0)
 
 Covers the core surface for TypeScript projects building durable
 systems with Inngest, plus CLI/dev-server workflows, API CLI operations,
-and REST API v2 fallback:
+REST API v2 fallback, durable AI agents, brownfield audits, and v3 → v4
+migration:
 
 | Skill | What it covers |
 |---|---|
@@ -23,11 +24,15 @@ and REST API v2 fallback:
 | `inngest-cli` | General CLI and dev server workflows: install/run `inngest dev`, local testing, Docker, MCP setup, deployment checks, and self-hosted `inngest start` |
 | `inngest-api-cli` | Prescriptive terminal workflows for `inngest api`, Cloud debugging, run traces, event runs, app syncs, invocation, webhooks, envs, keys, and Insights |
 | `inngest-api` | REST API v2 and OpenAPI fallback when raw HTTP is needed or the CLI does not expose an endpoint |
+| `inngest-agents` | Durable AI agents and agentic workflows: AgentKit, `step.ai`, tool calls, multi-agent networks, human approval, realtime progress |
+| `inngest-brownfield-audit` | Analyze an existing codebase for durability gaps and produce an incremental Inngest integration plan |
+| `inngest-v3-v4-migration` | Upgrade a TypeScript codebase from SDK v3 to v4, or fix mixed v3/v4 usage |
 
 The plugin also ships a local dev server MCP config (`.mcp.json`) so
 Claude Code can interact with the Inngest dev server directly when
-debugging functions, and a `/inngest:debug-run` command that turns a
-run ID into a diagnose → fix → verify loop.
+debugging functions, a `/inngest:debug-run` command that turns a
+run ID into a diagnose → fix → verify loop, and an `/inngest:audit`
+command that turns a legacy repo into a prioritized durability report.
 
 **Skill descriptions are written as problem-shape triggers** — they fire
 on phrases like "webhook handler that drops events," "flaky cron job,"
@@ -38,42 +43,31 @@ regardless of whether they know Inngest is the answer.
 
 ---
 
-## What's coming
+## Landed (v0.3.0)
 
-Three use cases planned, sequenced by effort-vs-impact.
+### v3 → v4 upgrade assistance
 
-### v3 → v4 upgrade assistance (next)
-
-For existing Inngest users still on SDK v3.
-
-- Version detection (read `package.json`)
-- Per-API migration map: 3-arg `createFunction` → options-first, trigger
-  syntax changes, middleware rewrite, step API changes
-- Scanner for v3 patterns in existing code
-- Automated refactor where AST changes are mechanical
-- Test runner integration to verify no regressions post-migration
-- Manual-review flags for patterns without clean v4 equivalents
-
-Smallest scope, clearest mapping, highest leverage for existing users.
-This release establishes the migration-skill pattern that future SDK
-major versions will reuse.
+Shipped as the `inngest-v3-v4-migration` skill: usage detection,
+per-API migration map (triggers into `createFunction` options,
+`EventSchemas` → `eventType`/`staticSchema`, serve options to the
+client, realtime imports, `step.invoke` string IDs, Connect changes),
+and post-migration verification. This establishes the migration-skill
+pattern that future SDK major versions will reuse.
 
 ### Brownfield audit
 
-For existing teams with legacy code that has durability gaps.
+Shipped as the `inngest-brownfield-audit` skill plus the
+`/inngest:audit` command: anti-pattern detection (`setTimeout`
+scheduling, polling loops, manual retries, fire-and-forget Promises,
+BullMQ/Bee-Queue, `node-cron`, slow webhooks), a prioritized
+severity + refactor report, and an opt-in `--apply` flow.
 
-- `/inngest:audit` command
-- Durability-auditor agent that finds anti-patterns: `setTimeout` for
-  scheduled work, polling loops, manual retry loops, fire-and-forget
-  detached Promises, BullMQ/Bee-Queue usage, `node-cron`, long-running
-  HTTP handlers, webhooks that don't ack fast
-- Prioritized report: severity + suggested Inngest refactor per hotspot
-- Optional per-hotspot "apply refactor with tests" flow
-- Agent orchestration designed for large repos so context limits don't
-  cap usefulness
+Still open from the original scope: agent orchestration for very large
+repos so context limits don't cap usefulness.
 
-The biggest enablement surface for new Inngest adopters: run this on
-your codebase, see your durability hotspots, fix them with one command.
+---
+
+## What's coming
 
 ### Competitor migration
 
@@ -107,9 +101,9 @@ arriving in v2 (e.g., `get-functions`, `get-app`).
 
 ### Migration skill convention
 
-Every SDK major version creates a migration skill. v3 → v4 (the next
-release) is the first instance and the template for future major
-versions.
+Every SDK major version creates a migration skill. v3 → v4
+(`inngest-v3-v4-migration`, landed in v0.3.0) is the first instance
+and the template for future major versions.
 
 ### Quality measurement
 
@@ -125,6 +119,10 @@ change to skill descriptions or content.
 
 Releases are tagged in this repo.
 
+- **v0.3.0** — three skills upstreamed from the Codex plugin via
+  inngest-skills: `inngest-agents` (AgentKit, durable AI agents),
+  `inngest-brownfield-audit`, and `inngest-v3-v4-migration`, plus the
+  `/inngest:audit` command
 - **v0.2.0** — CLI + v2 REST API support: `inngest-cli` for general CLI/dev
   server workflows, `inngest-api-cli` for full command references,
   `inngest-api` for REST API v2/OpenAPI fallback, `/inngest:debug-run`
