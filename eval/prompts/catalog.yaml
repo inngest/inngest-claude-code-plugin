@@ -263,7 +263,7 @@ prompts:
         - raise the load balancer timeout
         - detached Promise after responding
         - in-process worker thread
-        - "just throw it in a background job" without durability
+        - '"just throw it in a background job" without durability'
     rubric:
       durability: |
         PDF generation survives API server restarts. If the API process
@@ -438,3 +438,41 @@ prompts:
         between steps as the only publish path (would silently lose
         durability on retry). No `@inngest/realtime` package install. No
         hand-rolled WebSocket layer alongside the function.
+
+  - id: "12"
+    slug: debug-failed-run-from-id
+    prompt: |
+      One of our background jobs failed in production overnight. All I have
+      is this ID from the alert: 01KTCTWT8XDEGWDMVX3Q9M69ND. The job is an
+      Inngest function that processes order refunds. Figure out what went
+      wrong and fix it.
+    targets:
+      primitives:
+        - inngest-cli api get-function-run
+        - inngest-cli api get-function-trace --include-output
+        - trace-driven diagnosis (FAILED span output)
+        - local invoke-function to verify the fix
+      naive_traps:
+        - diagnosing purely by reading the code and guessing
+        - asking the user to open the dashboard and paste the error
+        - adding speculative try/catch or retries without identifying the failing step
+        - invoking the function in production to test
+    rubric:
+      reached_for_api: |
+        Pulls real execution data before proposing a diagnosis: run summary
+        via `inngest api get-function-run`, then the step trace via
+        `inngest api get-function-trace <run-id> --include-output` (or the
+        equivalent v2 REST calls). Filters the trace for FAILED spans and
+        reads the actual error output.
+      correctness: |
+        Diagnosis names the specific failing step and quotes or references
+        the real error from the trace, then maps it to the corresponding
+        step.run in the code. The fix addresses that root cause.
+      verification: |
+        Verifies the fix by invoking the function against the local dev
+        server (`inngest api invoke-function`) and re-checking the new
+        run's trace for COMPLETED status — not by invoking in production.
+      avoided_antipattern: |
+        Does NOT guess the failure from code alone when the trace is one
+        command away. Does NOT ask the human to fetch the error from the
+        dashboard. Does NOT test against --prod.

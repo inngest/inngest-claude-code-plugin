@@ -11,7 +11,7 @@
   "plugins": [
     {
       "name": "inngest",
-      "description": "The official Inngest plugin for Claude Code. Skills, MCP server, commands, and agents for building reliable AI workflows and durable functions on Inngest.",
+      "description": "The official Inngest plugin for Claude Code. Skills, MCP server, commands, and agents for building reliable AI workflows, durable functions, CLI/dev-server workflows, API CLI operations, and REST API fallback on Inngest.",
       "category": "development",
       "source": "./",
       "skills": [
@@ -21,7 +21,13 @@
         "./skills/inngest-events",
         "./skills/inngest-flow-control",
         "./skills/inngest-middleware",
-        "./skills/inngest-realtime"
+        "./skills/inngest-realtime",
+        "./skills/inngest-cli",
+        "./skills/inngest-api-cli",
+        "./skills/inngest-api"
+      ],
+      "commands": [
+        "./commands/debug-run.md"
       ],
       "repository": "https://github.com/inngest/inngest-claude-code-plugin",
       "homepage": "https://www.inngest.com/docs/ai-dev-tools/claude-code-plugin"
