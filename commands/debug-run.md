@@ -5,7 +5,7 @@ argument-hint: <run-id> [--prod]
 
 # Debug an Inngest function run
 
-Debug the Inngest function run with ID `$ARGUMENTS` using the `inngest-cli api` commands. Load the `inngest-api` skill for the full command and API reference.
+Debug the Inngest function run with ID `$ARGUMENTS` using the `inngest api` commands. Load the `inngest-api-cli` skill for the full command reference; use `inngest-api` only if raw REST API v2/OpenAPI fallback is needed.
 
 Follow this loop:
 

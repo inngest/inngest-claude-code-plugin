@@ -8,7 +8,8 @@ and the full skill inventory.
 ## Today (v0.2.0)
 
 Covers the core surface for TypeScript projects building durable
-systems with Inngest, plus programmatic API access:
+systems with Inngest, plus CLI/dev-server workflows, API CLI operations,
+and REST API v2 fallback:
 
 | Skill | What it covers |
 |---|---|
@@ -19,7 +20,9 @@ systems with Inngest, plus programmatic API access:
 | `inngest-flow-control` | Concurrency, throttling, rate limits, debounce, batching |
 | `inngest-middleware` | Cross-cutting concerns, dependency injection |
 | `inngest-realtime` | v4 native realtime, channels, subscription tokens, React/SSE consumers |
-| `inngest-api` | `inngest-cli api` commands, v2 REST API, run traces, invocation, Insights SQL |
+| `inngest-cli` | General CLI and dev server workflows: install/run `inngest dev`, local testing, Docker, MCP setup, deployment checks, and self-hosted `inngest start` |
+| `inngest-api-cli` | Prescriptive terminal workflows for `inngest api`, Cloud debugging, run traces, event runs, app syncs, invocation, webhooks, envs, keys, and Insights |
+| `inngest-api` | REST API v2 and OpenAPI fallback when raw HTTP is needed or the CLI does not expose an endpoint |
 
 The plugin also ships a local dev server MCP config (`.mcp.json`) so
 Claude Code can interact with the Inngest dev server directly when
@@ -94,13 +97,13 @@ case studies.
 
 ### Production observability
 
-Largely landed in v0.2.0: the `inngest-api` skill gives Claude Code
-production-side access through the CLI's `api` commands and the v2
-REST API — live run summaries, step traces, event-triggered runs,
-direct invocation, and Insights SQL over execution history. Remaining
-work: a production-side MCP server as an alternative to shelling out
-to the CLI, and coverage for endpoints still arriving in v2 (e.g.,
-`get-functions`, `get-app`).
+Largely landed in v0.2.0: `inngest-api-cli` gives Claude Code
+production-side access through the CLI's `api` commands, while
+`inngest-api` covers REST API v2/OpenAPI fallback — live run summaries,
+step traces, event-triggered runs, direct invocation, and Insights SQL over
+execution history. Remaining work: a production-side MCP server as an
+alternative to shelling out to the CLI, and coverage for endpoints still
+arriving in v2 (e.g., `get-functions`, `get-app`).
 
 ### Migration skill convention
 
@@ -122,9 +125,11 @@ change to skill descriptions or content.
 
 Releases are tagged in this repo.
 
-- **v0.2.0** — CLI + v2 REST API support: `inngest-api` skill with full
-  command and endpoint references, `/inngest:debug-run` command,
-  agent-first API access (auth bootstrap, ID discovery, Insights SQL)
+- **v0.2.0** — CLI + v2 REST API support: `inngest-cli` for general CLI/dev
+  server workflows, `inngest-api-cli` for full command references,
+  `inngest-api` for REST API v2/OpenAPI fallback, `/inngest:debug-run`
+  command, and agent-first API access (auth bootstrap, ID discovery, Insights
+  SQL)
 - **v0.1.0** — first standalone release, seven skills covering the core
   TypeScript durable-execution surface, dev server MCP config, eval
   harness scaffolding

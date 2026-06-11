@@ -7,16 +7,16 @@
 
 # Inngest Plugin for Claude Code
 
-The official Inngest plugin for Claude Code. One install, and Claude Code knows how to build reliable durable functions, design event-driven workflows, configure flow control, and stream realtime updates with [Inngest](https://www.inngest.com).
+The official Inngest plugin for Claude Code. One install, and Claude Code knows how to build reliable durable functions, design event-driven workflows, configure flow control, stream realtime updates, run the Inngest CLI and Dev Server, debug runs with `inngest api`, and fall back to REST API v2 with [Inngest](https://www.inngest.com).
 
-> **Beta:** v0.1.0 is the first public beta. We'd love your feedback — [open an issue](https://github.com/inngest/inngest-claude-code-plugin/issues), drop into our [Discord](https://www.inngest.com/discord), or ping [@inngest](https://twitter.com/inngest) on socials.
+> **Beta:** v0.2.0 is the current public beta. We'd love your feedback — [open an issue](https://github.com/inngest/inngest-claude-code-plugin/issues), drop into our [Discord](https://www.inngest.com/discord), or ping [@inngest](https://twitter.com/inngest) on socials.
 
 <!-- TODO: hero gif showing the plugin in action -->
 
 ## What's included
 
-- **8 skills** covering setup, events, durable functions, steps, flow control, middleware, realtime, and the CLI + v2 REST API — Claude Code loads the right one automatically based on what you're building.
-- **Full API access, agent-first.** The `inngest-api` skill teaches the agent the entire `inngest-cli api` surface and v2 REST API — runs, traces, invocation, syncs, Insights SQL — including how to bootstrap auth and discover run/app/function IDs on its own. The only human step is creating an API key.
+- **10 skills** covering setup, events, durable functions, steps, flow control, middleware, realtime, CLI/dev-server workflows, API CLI operations, and REST API fallback — Claude Code loads the right one automatically based on what you're building.
+- **Full API access, agent-first.** The `inngest-api-cli` skill teaches the agent the `inngest api` surface — runs, traces, invocation, syncs, Insights SQL — including how to bootstrap auth and discover run/app/function IDs on its own. `inngest-api` is reserved for raw REST API v2/OpenAPI fallback. The only human step is creating an API key.
 - **`/inngest:debug-run` command** — hand Claude Code a run ID and it pulls the trace, finds the failing step, fixes the code, and verifies with a local invoke.
 - **MCP server** for the local Inngest dev server. Claude Code can inspect runs, events, and function state on your machine while you work.
 - **Eval harness** so you can verify the skills are actually steering Claude Code on your codebase (and contribute new prompts back).
@@ -71,11 +71,13 @@ claude --plugin-dir /path/to/inngest-claude-code-plugin
 | [`inngest-flow-control`](./skills/inngest-flow-control/) | Concurrency, throttle, rate limit, debounce, priority, singleton, batching | Handling rate limits, deduping bursts, per-tenant fairness |
 | [`inngest-middleware`](./skills/inngest-middleware/) | Lifecycle, dependency injection, Sentry + encryption middleware, custom middleware | Cross-cutting concerns: logging, tracing, DI, encryption |
 | [`inngest-realtime`](./skills/inngest-realtime/) | v4 native realtime, channels, subscription tokens, `useRealtime` hook, SSE | Streaming workflow updates to a UI in real time |
-| [`inngest-api`](./skills/inngest-api/) | `inngest-cli api` commands, v2 REST API, API keys, run traces, direct invocation, app syncs, Insights SQL | Debugging failed runs, scripting against Inngest, CI/CD |
+| [`inngest-cli`](./skills/inngest-cli/) | CLI and Dev Server workflows: `inngest dev`, local testing, Docker, MCP setup, deployment checks, self-hosted `inngest start` | Local development, testing, self-hosted server operations |
+| [`inngest-api-cli`](./skills/inngest-api-cli/) | `inngest api` commands, API keys, run traces, direct invocation, app syncs, Insights SQL | Debugging failed runs, scripting against Inngest, CI/CD |
+| [`inngest-api`](./skills/inngest-api/) | REST API v2 and OpenAPI fallback | Raw HTTP, OpenAPI, endpoint request shapes |
 
 ## Debug runs from the terminal
 
-The [`inngest-api`](./skills/inngest-api/) skill gives the agent programmatic access to real execution data through the [Inngest CLI's `api` commands](https://www.inngest.com/docs/cli) and the [v2 REST API](https://api-docs.inngest.com/):
+The [`inngest-api-cli`](./skills/inngest-api-cli/) skill gives the agent programmatic access to real execution data through the [Inngest CLI's `api` commands](https://www.inngest.com/docs/cli). The [`inngest-api`](./skills/inngest-api/) skill covers raw REST API v2 and OpenAPI fallback.
 
 ```bash
 # Run summary
@@ -91,7 +93,7 @@ npx inngest-cli@latest api --prod get-event-runs 01KTCTWSZJEKAFEDA4F9GYHFQW --li
 npx inngest-cli@latest api invoke-function my-app my-function --data '{"message": "hello"}'
 ```
 
-The CLI targets the local dev server by default (no API key needed); `--prod` targets Inngest Cloud with an [API key](https://www.inngest.com/docs/platform/api-keys) from `$INNGEST_API_KEY`. The skill ships complete references for [every CLI command](./skills/inngest-api/references/cli-commands.md) and [every v2 endpoint](./skills/inngest-api/references/rest-api-v2.md), so the agent can work the whole surface — including finding run IDs itself via Insights SQL — without a human driving.
+The CLI targets the local dev server by default (no API key needed); `--prod` targets Inngest Cloud with an [API key](https://www.inngest.com/docs/platform/api-keys) from `$INNGEST_API_KEY`. The skills ship complete references for [every CLI command](./skills/inngest-api-cli/references/cli-commands.md) and [every v2 endpoint](./skills/inngest-api/references/rest-api-v2.md), so the agent can work the whole surface — including finding run IDs itself via Insights SQL — without a human driving.
 
 Or just run the command:
 
@@ -156,7 +158,7 @@ This lets the agent inspect runs, events, and function state on your local dev s
  and fix it."
 ```
 
-→ Plugin pulls the run summary and full step trace via `inngest-cli api`, isolates the `FAILED` span, reads the real error output, fixes the step code, and verifies by invoking the function locally.
+→ Plugin pulls the run summary and full step trace via `inngest api`, isolates the `FAILED` span, reads the real error output, fixes the step code, and verifies by invoking the function locally.
 
 ## Skills source of truth
 
@@ -175,7 +177,7 @@ See [`eval/README.md`](./eval/README.md) for prompt format, judge config, and ho
 
 ## Beta feedback
 
-This is v0.1.0. We're shipping early to learn from real usage:
+This is v0.2.0. We're shipping early to learn from real usage:
 
 - **What's missing:** open a [GitHub issue](https://github.com/inngest/inngest-claude-code-plugin/issues) — even a one-liner helps.
 - **What's broken:** same place. Include the prompt and the skill that fired (or didn't).
