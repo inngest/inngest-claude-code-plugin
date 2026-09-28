@@ -1,42 +1,27 @@
 ---
-description: Debug an Inngest function run from its run ID — pull the trace, find the failing step, propose a fix, verify locally
+description: Inspect an Inngest run and trace, explain its failure, and fix the code when available
 argument-hint: <run-id> [--prod]
 ---
 
 # Debug an Inngest function run
 
-Debug the Inngest function run with ID `$ARGUMENTS` using the `inngest api` commands. Load the `inngest-api-cli` skill for the full command reference; use `inngest-api` only if raw REST API v2/OpenAPI fallback is needed.
+Inspect the run in `$ARGUMENTS`. With `--prod`, use the connected Cloud MCP
+server and load `inngest-cloud`. Resolve the intended environment explicitly.
+Without `--prod`, use the local Dev Server connection; do not switch to Cloud
+if the local server is unavailable.
 
-Follow this loop:
+For Cloud, use `get_run` and `get_run_trace`. For local runs, inspect the
+configured local connection’s live tool schema first: newer servers expose
+those tools, while older versions may expose `get_run_status` and
+`poll_run_status`. Use the available read-only run tools and report any missing
+trace capability. Fetch outputs only as needed, then explain the failure with
+the run ID, step, and error.
+If code is available and the user requests a fix, locate the implementation,
+make the change, and run the relevant local checks. If the user only asked for
+a diagnosis, stop after explaining it.
 
-1. **Resolve the target.** If the arguments include `--prod`, target Inngest Cloud (requires `$INNGEST_API_KEY`; if it's missing, stop and ask the user to create a key at https://app.inngest.com/settings/api-keys). Otherwise target the local dev server — verify it's up with `npx inngest-cli@latest api health` first.
-
-2. **Get the run summary.**
-
-   ```bash
-   npx inngest-cli@latest api [--prod] get-function-run <run-id>
-   ```
-
-   Report status, function, trigger, and timing. If the run is `QUEUED` or `RUNNING`, say so and offer to poll instead of debugging.
-
-3. **Pull the trace with outputs.**
-
-   ```bash
-   npx inngest-cli@latest api [--prod] get-function-trace <run-id> --include-output
-   ```
-
-   Filter for failures: `jq '[.data.rootSpan.children[] | select(.status == "FAILED")]'`. Check nested children too. Also look for `WAITING` spans if the run appears stuck rather than failed.
-
-4. **Diagnose from real data.** Read the failing step's `output` (the actual error), its `stepOp`, and its `input` if present. Locate the corresponding `step.run` / step call in the codebase and explain the root cause. Work from the trace, not from guessing.
-
-5. **Propose and apply the fix** (with the user's normal review flow for code changes).
-
-6. **Verify locally.** Invoke the function against the dev server with representative data:
-
-   ```bash
-   npx inngest-cli@latest api invoke-function <app-id> <function-id> --data '<json>'
-   ```
-
-   Take the `runId` from the response and re-run step 3 against it to confirm every span is `COMPLETED`. Report the before/after.
-
-Never invoke against `--prod` to verify a fix unless the user explicitly asks — production invokes execute real side effects.
+Use `inngest-api-cli` for explicit terminal workflows or missing MCP tools.
+Use `inngest-api` for raw HTTP. Do not request an API key when OAuth MCP is
+available. Don't invoke, rerun, or send an event as part of a read-only
+investigation. A production verification run needs the user's authorization
+because it executes real application side effects.

@@ -1,5 +1,4 @@
 {
-  "_": "See reference: https://code.claude.com/docs/en/plugin-marketplaces#marketplace-schema",
   "name": "inngest-claude-code-plugin",
   "metadata": {
     "description": "Official Inngest plugin for Claude Code"
@@ -11,7 +10,7 @@
   "plugins": [
     {
       "name": "inngest",
-      "description": "The official Inngest plugin for Claude Code. Skills, MCP server, commands, and agents for building reliable AI workflows, durable functions, durable AI agents, CLI/dev-server workflows, API CLI operations, REST API fallback, brownfield audits, and v3-to-v4 migrations on Inngest.",
+      "description": "Build durable workflows and inspect Inngest Cloud apps, functions, events, runs, and traces through OAuth MCP.",
       "category": "development",
       "source": "./",
       "skills": [
@@ -27,7 +26,8 @@
         "./skills/inngest-api",
         "./skills/inngest-agents",
         "./skills/inngest-brownfield-audit",
-        "./skills/inngest-v3-v4-migration"
+        "./skills/inngest-v3-v4-migration",
+        "./skills/inngest-cloud"
       ],
       "commands": [
         "./commands/debug-run.md",
