@@ -14,7 +14,7 @@ reviewer-case results were not recorded. The full matrix below remains pending.
 
 - Name: Inngest
 - Publisher: Inngest, Inc.
-- Short description: Build durable workflows and debug Inngest Cloud runs.
+- Short description: Debug Inngest Cloud workflows.
 - Description: Connect your Inngest account to inspect deployed apps, functions,
   events, runs, traces, and Insights. Diagnose failed workflows, understand
   execution history, and carry out requested operations in the selected
@@ -117,6 +117,8 @@ before retrying it.
   outputs, execution history, user identity, and the applicable retention.
 - [ ] Create reviewer credentials, capture real demo screenshots if requested,
   choose supported regions, and assign a submission owner.
+- [ ] For OpenAI, provide a demo-recording URL showing the main use cases and
+  tools across supported platforms.
 - [ ] Check all bundled coding skills against provider scans. Existing terminal
   workflows include `npx ...@latest` and environment-based credentials; they
   need review against Claude's launcher and credential rules. Core Cloud use

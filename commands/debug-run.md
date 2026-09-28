@@ -10,8 +10,12 @@ server and load `inngest-cloud`. Resolve the intended environment explicitly.
 Without `--prod`, use the local Dev Server connection; do not switch to Cloud
 if the local server is unavailable.
 
-Use `get_run` and `get_run_trace` to identify failed or waiting spans, fetching
-outputs only as needed. Explain the failure with the run ID, step, and error.
+For Cloud, use `get_run` and `get_run_trace`. For local runs, inspect the
+configured local connection’s live tool schema first: newer servers expose
+those tools, while older versions may expose `get_run_status` and
+`poll_run_status`. Use the available read-only run tools and report any missing
+trace capability. Fetch outputs only as needed, then explain the failure with
+the run ID, step, and error.
 If code is available and the user requests a fix, locate the implementation,
 make the change, and run the relevant local checks. If the user only asked for
 a diagnosis, stop after explaining it.

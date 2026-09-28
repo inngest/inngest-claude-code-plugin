@@ -184,7 +184,7 @@ installed for development before a directory listing is approved.
  and fix it."
 ```
 
-→ Plugin pulls the run summary and full step trace via `inngest api`, isolates the `FAILED` span, reads the real error output, fixes the step code, and verifies by invoking the function locally.
+→ Plugin uses the OAuth `inngest-cloud` connection to inspect the run and trace, identifies the failed step and error, and fixes the code when requested. Verification uses relevant local checks; invoking a function requires that action to be part of the request.
 
 ### Find the durability gaps in a legacy codebase
 
