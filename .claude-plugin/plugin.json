@@ -16,5 +16,6 @@
     "durable-execution",
     "mcp",
     "oauth"
-  ]
+  ],
+  "privacyPolicyUrl": "https://www.inngest.com/privacy"
 }
