@@ -1,6 +1,6 @@
 ---
 description: Audit this codebase for durability gaps — find anti-patterns, prioritize them, and propose Inngest refactors
-argument-hint: [path] [--apply]
+argument-hint: "[path] [--apply]"
 ---
 
 # Audit a codebase for durability gaps
