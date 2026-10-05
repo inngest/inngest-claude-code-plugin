@@ -1,0 +1,15 @@
+{
+  "name": "inngest-ci",
+  "version": "0.1.0",
+  "description": "Inngest Labs (experimental): see your local @inngest/ci runs above the prompt, one line each, and let Claude set up and run Inngest CI by itself.",
+  "author": {
+    "name": "Inngest, Inc.",
+    "email": "hello@inngest.com",
+    "url": "https://www.inngest.com"
+  },
+  "homepage": "https://www.inngest.com/docs/labs/ci",
+  "repository": "https://github.com/inngest/inngest-claude-code-plugin",
+  "license": "Apache-2.0",
+  "keywords": ["inngest", "ci", "labs", "experimental", "pipelines"],
+  "types": "./types/index.d.ts"
+}

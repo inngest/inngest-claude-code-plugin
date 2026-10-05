@@ -42,6 +42,14 @@ cd your-project/
 claude --plugin-dir /path/to/inngest-claude-code-plugin
 ```
 
+### Inngest CI (Labs)
+
+This marketplace also has `inngest-ci`, an experimental [Inngest Labs](https://www.inngest.com/docs/labs) plugin for [`@inngest/ci`](https://github.com/inngest/inngest-js/blob/main/packages/ci/README.md): your local CI runs above the prompt, one line each, and a skill that lets Claude set up and run CI itself. See [its README](./plugins/inngest-ci/README.md).
+
+```
+/plugin install inngest-ci@inngest-claude-code-plugin
+```
+
 ## Quick start
 
 1. Install the plugin from this repository's marketplace for Claude Code.

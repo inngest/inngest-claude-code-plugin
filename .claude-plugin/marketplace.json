@@ -35,6 +35,14 @@
       ],
       "repository": "https://github.com/inngest/inngest-claude-code-plugin",
       "homepage": "https://www.inngest.com/docs/ai-dev-tools/claude-code-plugin"
+    },
+    {
+      "name": "inngest-ci",
+      "description": "Inngest Labs (experimental): see your local @inngest/ci runs above the prompt, one line each, and let Claude set up and run Inngest CI by itself.",
+      "category": "development",
+      "source": "./plugins/inngest-ci",
+      "repository": "https://github.com/inngest/inngest-claude-code-plugin",
+      "homepage": "https://www.inngest.com/docs/labs/ci"
     }
   ]
 }
