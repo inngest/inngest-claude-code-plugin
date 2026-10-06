@@ -252,6 +252,20 @@ test('no sessions: the band draws nothing of its own and keeps the other mods', 
   }
 })
 
+test("between commands, a running job's activity says what it's doing", async ($, on) => {
+  const world = await setUp($, on)
+  const base = session('s1') as { runs: { jobs: Record<string, unknown>[] }[] }
+
+  base.runs[0].jobs[2] = { id: 'test', status: 'running', activity: 'restoring base snapshot…' }
+  write(world, base as Fixture)
+  await world.clock.advance(5000)
+
+  const ui = await band($, 'terminal')
+
+  expect(await ui.find({ type: 'Text', text: /^restoring base snapshot… · test$/ })).toBeDefined()
+  await ui.unmount()
+})
+
 test('one running session: mark, target, repo, a tick per job, the command, elapsed, who; selecting opens the run', async ($, on) => {
   const world = await setUp($, on)
 

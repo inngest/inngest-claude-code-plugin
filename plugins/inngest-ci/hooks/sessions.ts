@@ -39,6 +39,8 @@ type CiJob = {
   id: string
   status: CiStatus
   command?: { name: string; attempt?: number }
+  /** What the job is doing while no command runs, like `creating machine…`. */
+  activity?: string
   title?: string
 }
 
@@ -225,6 +227,10 @@ function describe(s: CiSession, tone: CiTone, jobs: readonly CiJob[]): { detail:
     const attempt = (current.command.attempt ?? 1) > 1 ? ` · attempt ${current.command.attempt}` : ''
 
     return { detail: `${current.command.name}${attempt}`, aside: current.id }
+  }
+
+  if (current?.activity) {
+    return { detail: current.activity, aside: current.id }
   }
 
   if (current) {
