@@ -289,7 +289,7 @@ export const register: Register = on => {
           )}
         </Box>
         {hasContent(theirs) && (
-          <>
+          <Box flexDirection="column">
             <Box paddingX={1}>
               {Svg ? (
                 <Svg source={ruleSvg((e.props.bodyColumns - 2) * CELL_PX)} alt="" width={(e.props.bodyColumns - 2) * CELL_PX} height={RULE_PX} />
@@ -298,7 +298,7 @@ export const register: Register = on => {
               )}
             </Box>
             {theirs}
-          </>
+          </Box>
         )}
       </Box>
     )
