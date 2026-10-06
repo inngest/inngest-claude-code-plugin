@@ -52,6 +52,39 @@ const TICK_FILL: Record<CiStatus, string> = {
   cancelled: `fill="${HEX.gray}" fill-opacity=".6"`,
 }
 
+/** A hairline across the band on the desktop, between two mods' blocks. */
+export function ruleSvg(widthPx: number): string {
+  const width = Math.max(1, Math.round(widthPx))
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="9" viewBox="0 0 ${width} 9"><line x1="0" y1="4.5" x2="${width}" y2="4.5" stroke="${HEX.gray}" stroke-opacity=".35"/></svg>`
+}
+
+/**
+ * Whether a drawn tree shows anything. The band hands down a tree even when
+ * nothing beneath draws, so the separator asks this instead of testing for null.
+ */
+export function hasContent(node: unknown): boolean {
+  if (node === null || node === undefined || node === false) {
+    return false
+  }
+
+  if (typeof node === 'string' || typeof node === 'number') {
+    return String(node).trim() !== ''
+  }
+
+  if (Array.isArray(node)) {
+    return node.some(hasContent)
+  }
+
+  const { type, props, children } = node as { type?: unknown; props?: { children?: unknown }; children?: unknown }
+
+  if (type !== 'Box' && type !== 'Text') {
+    return true
+  }
+
+  return hasContent(children) || hasContent(props?.children)
+}
+
 /** Pixels per tick on the desktop. */
 export const TICK_PX = 11
 

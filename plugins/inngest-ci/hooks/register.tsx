@@ -11,7 +11,7 @@
 import type { EngineInterface, Register, RenderSurface, Timer } from 'claude-code'
 
 import type { CiLine, CiView } from '../types'
-import { LOGO_SVG, MARK, TICK, TICK_PX, TONE, markSvg, ticksAlt, ticksSvg } from './look'
+import { LOGO_SVG, MARK, TICK, TICK_PX, TONE, hasContent, markSvg, ruleSvg, ticksAlt, ticksSvg } from './look'
 import { endingNote, isMineAndEnded, parseSession, summaryOf, viewOf } from './sessions'
 import type { CiSession } from './sessions'
 
@@ -228,7 +228,7 @@ export const register: Register = on => {
       )
     }
 
-    // Whoever stacks two blocks in the band puts the gap between them, so a band with only CI in it has none.
+    // Whoever stacks two blocks in the band draws the rule between them, so a band with only CI in it has none.
     return (
       <Box flexDirection="column">
         <Box flexDirection="column" paddingX={1}>
@@ -288,7 +288,18 @@ export const register: Register = on => {
             </Box>
           )}
         </Box>
-        {theirs && <Box paddingTop={1}>{theirs}</Box>}
+        {hasContent(theirs) && (
+          <>
+            <Box paddingX={1}>
+              {Svg ? (
+                <Svg source={ruleSvg((e.props.bodyColumns - 2) * CELL_PX)} alt="" width={(e.props.bodyColumns - 2) * CELL_PX} height={9} />
+              ) : (
+                <Text dimColor>{'─'.repeat(Math.max(1, e.props.bodyColumns - 2))}</Text>
+              )}
+            </Box>
+            {theirs}
+          </>
+        )}
       </Box>
     )
   })

@@ -298,7 +298,7 @@ test('one running session: mark, target, repo, a tick per job, the command, elap
 
   expect(link?.props.href).toBe('http://localhost:24288/run?runID=01RUN')
   expect(link?.props.label).toBe('pr')
-  expect((await desktop.findAll({ type: 'Svg' })).map(svg => svg.props.alt)).toEqual(['Inngest', 'running', '4 jobs: 1 from cache, 1 passed, 1 running, 1 queued'])
+  expect((await desktop.findAll({ type: 'Svg' })).map(svg => svg.props.alt)).toEqual(['Inngest', 'running', '4 jobs: 1 from cache, 1 passed, 1 running, 1 queued', ''])
   await desktop.unmount()
 })
 
