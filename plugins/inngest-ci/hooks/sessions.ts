@@ -231,7 +231,8 @@ function describe(s: CiSession, tone: CiTone, jobs: readonly CiJob[]): { detail:
   if (current?.command) {
     const attempt = (current.command.attempt ?? 1) > 1 ? ` · attempt ${current.command.attempt}` : ''
 
-    return { detail: `${current.command.name}${attempt}`, aside: current.id }
+    // `$` marks a command, so it reads apart from a status like `cached`.
+    return { detail: `$ ${current.command.name}${attempt}`, aside: current.id }
   }
 
   if (current?.activity) {
@@ -258,7 +259,7 @@ function failureOf(s: CiSession, jobs: readonly CiJob[]): string {
   }
 
   if (job?.command) {
-    return `${job.command.name} failed`
+    return `$ ${job.command.name} failed`
   }
 
   return runReason(s) ?? 'failed'

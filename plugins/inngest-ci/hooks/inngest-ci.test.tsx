@@ -329,7 +329,7 @@ test('one running session: mark, target, repo, a tick per job, the command, elap
 
   expect((await terminal.find({ type: 'Text', text: '●' }))?.props.color).toBe('suggestion')
   expect(await terminal.find({ type: 'Text', text: 'inngest-js' })).toBeDefined()
-  expect(await terminal.find({ type: 'Text', text: /^pnpm test · test$/ })).toBeDefined()
+  expect(await terminal.find({ type: 'Text', text: /^\$ pnpm test · test$/ })).toBeDefined()
   expect(await terminal.find({ type: 'Text', text: '46s' })).toBeDefined()
 
   const ticks = await terminal.findAll({ type: 'Text', text: /^[■□–]$/ })
@@ -446,9 +446,9 @@ test('five sessions: four lines and + 1 more, as the terminal lays them out', as
 
   expect(paint(drawn.children[0]).split('\n')).toEqual([
     ' Inngest CI  3 running · 1 failed',
-    ' ● docs     inngest-js ■■■□    pnpm test · test                                                10s',
-    ' ● pr       inngest-js ■■■□    pnpm test · test                                                46s',
-    ' ● nightly  inngest    ■■■■■■■ pnpm test · compat (node:24, db:postgres)                    2m 19s',
+    ' ● docs     inngest-js ■■■□    $ pnpm test · test                                              10s',
+    ' ● pr       inngest-js ■■■□    $ pnpm test · test                                              46s',
+    ' ● nightly  inngest    ■■■■■■■ $ pnpm test · compat (node:24, db:postgres)                  2m 19s',
     ' ✕ release  inngest-js ■■–     pnpm build exited with 1                                   just now',
     ' + 1 more  lint in inngest-js cancelled',
   ])
@@ -500,7 +500,7 @@ test('a session that stops writing is lost and dims, then leaves; one that keeps
 
   expect((await ui.find({ type: 'Text', text: 'stopped reporting' }))?.props.dimColor).toBe(true)
   expect(await ui.find({ type: 'Text', text: '◌' })).toBeDefined()
-  expect(await ui.find({ type: 'Text', text: /^pnpm test/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /^\$ pnpm test/ })).toBeDefined()
   await ui.unmount()
 
   write(world, session('alive', { updatedAt: T0 + 65_000 }))
