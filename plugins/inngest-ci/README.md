@@ -23,7 +23,7 @@ See your local [`@inngest/ci`](https://github.com/inngest/inngest-js/blob/main/p
 
 - **Claude runs CI the right way.** In a project that uses `@inngest/ci`, Claude and its subagents know to run `npx inngest-ci <pipeline|job> --no-interactive` with exact targets and flags, what the exit codes mean, and not to start a Dev Server or the app by hand.
 
-- **The `inngest-ci` skill** sets up `@inngest/ci` in a TypeScript project, writes pipelines and jobs, runs them locally, and reads failures.
+- **The `inngest-ci` skill** sets up `@inngest/ci` in a TypeScript project, writes pipelines and jobs (one file each under `ci/`), runs them locally, and reads failures.
 
 The plugin never approves a tool call for you.
 

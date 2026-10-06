@@ -24,7 +24,7 @@ const DISMISSED = 'dismissed-setup'
 
 /** The ask "Ask Claude to set up Inngest CI" puts in the prompt box, for the person to send or edit. */
 const SETUP_PROMPT =
-  'Set up Inngest CI for this project with the inngest-ci skill: a first pipeline that installs, lints and tests, then run it once with `npx inngest-ci <pipeline> --no-interactive` and fix anything that fails.'
+  'Set up Inngest CI for this project with the inngest-ci skill: a first pipeline that installs, lints and tests, laid out as ci/client.ts, ci/jobs/<job>.ts, ci/pipelines/<pipeline>.ts, ci/index.ts and ci/server.ts, then run it once with `npx inngest-ci <pipeline> --no-interactive` and fix anything that fails.'
 
 const LIVE_POLL_MS = 500
 const IDLE_POLL_MS = 5000
@@ -45,7 +45,7 @@ This project runs CI with \`@inngest/ci\`. To run it, use \`npx inngest-ci <pipe
 - A pipeline or job ID as the target; \`--pipeline <id>\` or \`--job <id>\` when a name is both.
 - \`--event <name>\` to pick a trigger when a pipeline has several, \`--data <json>\` for a \`ci.manual()\` trigger, \`--input <json>\` for a job's input, and \`--<axis> <value>\` for one matrix combination.
 
-Exit codes: 0 passed, 1 failed or cancelled, 2 setup error (the output says what to change). \`inngest-ci\` starts and stops its own Dev Server and app, so do not start a Dev Server or the app by hand for CI. The \`inngest-ci\` skill covers writing pipelines and reading failures.`
+Exit codes: 0 passed, 1 failed or cancelled, 2 setup error (the output says what to change). \`inngest-ci\` starts and stops its own Dev Server and app, so do not start a Dev Server or the app by hand for CI. Write CI as one file per job (\`ci/jobs/<job>.ts\`) and per pipeline (\`ci/pipelines/<pipeline>.ts\`), alongside \`ci/client.ts\` and \`ci/index.ts\`. The \`inngest-ci\` skill covers writing pipelines and reading failures.`
 
 /** The project around the working directory: its nearest `package.json` folder, and whether it uses `@inngest/ci`. */
 type Project = { root: string | null; hasCi: boolean }

@@ -28,15 +28,59 @@ export const inngest = new Inngest({ id: "my-app" });
 export const ci = createCi(inngest);
 ```
 
+### Layout
+
+One file per job and per pipeline, named after it. Create this layout, and follow it when adding to an existing project:
+
+```
+ci/
+  client.ts          inngest and ci (createCi)
+  helpers.ts         shared helpers
+  jobs/base.ts       one job (or ci.matrix) per file
+  jobs/lint.ts
+  pipelines/pr.ts    one pipeline per file
+  index.ts           imports every pipeline, re-exports ci
+  server.ts          serves ci.functions()
+```
+
+Jobs `from()` the jobs they start from by importing their files. Pipelines import the jobs they call. Keep imports one way (pipelines to jobs to client) so none are circular. Import a job no pipeline calls in `index.ts` too, or it is not registered.
+
 ### A first pipeline
 
-`base` checks out and installs once; `lint` and `test` each start from a copy of its machine and run in parallel. Match the install and script commands to the project's package manager.
+`base` checks out and installs once; `lint` and `test` each start from a copy of its machine and run in parallel. Match the install and script commands to the project's package manager. In each pipeline file, `ci.pipeline()` comes first with its options expanded.
 
-`ci/pipelines.ts`:
+`ci/jobs/base.ts`:
 
 ```ts
-import { github, checkout, from, $ } from "@inngest/ci";
-import { ci } from "./client";
+import { checkout, $ } from "@inngest/ci";
+import { ci } from "../client";
+
+export const base = ci.job("base", async () => {
+  await checkout();
+  await $`pnpm install`;
+});
+```
+
+`ci/jobs/lint.ts` (`test.ts` is the same with `pnpm test` and `.retries(1)`):
+
+```ts
+import { from, $ } from "@inngest/ci";
+import { ci } from "../client";
+import { base } from "./base";
+
+export const lint = ci.job("lint", async () => {
+  await from(base);
+  await $`pnpm lint`;
+});
+```
+
+`ci/pipelines/pr.ts`:
+
+```ts
+import { github } from "@inngest/ci";
+import { ci } from "../client";
+import { lint } from "../jobs/lint";
+import { test } from "../jobs/test";
 
 export const pr = ci.pipeline(
   {
@@ -48,33 +92,26 @@ export const pr = ci.pipeline(
     await Promise.all([lint(), test()]);
   },
 );
-
-const base = ci.job("base", async () => {
-  await checkout();
-  await $`pnpm install`;
-});
-
-const lint = ci.job("lint", async () => {
-  await from(base);
-  await $`pnpm lint`;
-});
-
-const test = ci.job("test", async () => {
-  await from(base);
-  await $`pnpm test`.retries(1);
-});
 ```
 
 ### The server
 
 It must serve `ci.functions()` (the pipelines plus the functions CI needs) and listen on `PORT`, which `inngest-ci` sets.
 
+`ci/index.ts`:
+
+```ts
+import "./pipelines/pr";
+
+export { ci } from "./client";
+```
+
 `ci/server.ts`:
 
 ```ts
 import { createServer } from "inngest/node";
-import { inngest, ci } from "./client";
-import "./pipelines";
+import { inngest } from "./client";
+import { ci } from "./index";
 
 const server = createServer({ client: inngest, functions: ci.functions() });
 
