@@ -307,6 +307,32 @@ test('before the run exists, selecting opens the Dev Server', async ($, on) => {
   }
 })
 
+test("once a run's Dev Server has stopped, selecting copies the command that reopens it", async ($, on) => {
+  const copied: string[] = []
+
+  on('ui.copy', ($, e) => {
+    copied.push(e.text)
+
+    return undefined as never
+  })
+
+  const world = await setUp($, on)
+
+  write(world, session('s1', { conclusion: 'passed', endedAt: T0 - 2000, closedAt: T0 - 1000 }))
+  await world.clock.advance(5000)
+
+  for (const surface of SURFACES) {
+    const ui = await band($, surface)
+
+    expect(await ui.find({ type: 'Link' })).toBeUndefined()
+    await ui.press({ key: 'reopen:s1' })
+    await ui.unmount()
+  }
+
+  expect(copied).toEqual(['npx inngest-ci open 01RUN', 'npx inngest-ci open 01RUN'])
+  expect(world.ran).toEqual([])
+})
+
 test('five sessions: four lines and + 1 more, as the terminal lays them out', async ($, on) => {
   const world = await setUp($, on)
 

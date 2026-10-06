@@ -31,8 +31,10 @@ export type CiLine = {
   /** `2m 14s` while running, `just now` or `3m ago` once ended. */
   time: string
   startedBy: 'claude' | 'user'
-  /** The run in the Dev Server, or the Dev Server before the run exists. */
+  /** The run in the Dev Server, or the Dev Server before the run exists; null once that Dev Server has stopped. */
   url: string | null
+  /** The command that reopens the run from saved history, once its Dev Server has stopped. */
+  reopen: string | null
 }
 
 /** What the band draws: up to four lines, and a summary of the rest. */

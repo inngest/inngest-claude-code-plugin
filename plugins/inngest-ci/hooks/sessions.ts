@@ -17,6 +17,8 @@ export type CiSession = {
   startedAt: number
   updatedAt: number
   endedAt?: number
+  /** When the CLI exited: its Dev Server is gone, so run URLs no longer open. */
+  closedAt?: number
   startedBy: { kind: 'claude'; sessionId?: string } | { kind: 'user' }
   project: { root: string; name: string }
   repo?: { fullName?: string }
@@ -28,6 +30,7 @@ export type CiSession = {
 }
 
 type CiRun = {
+  runId?: string
   url?: string
   jobs: CiJob[]
 }
@@ -146,6 +149,8 @@ function lineOf(s: CiSession, tone: CiTone, now: number): CiLine {
   })
 
   const { detail, aside } = describe(s, tone, jobs)
+  const isServing = isDevServerUp(s, now)
+  const runId = s.runs.at(-1)?.runId
 
   return {
     id: s.sessionId,
@@ -160,8 +165,21 @@ function lineOf(s: CiSession, tone: CiTone, now: number): CiLine {
     aside,
     time: timeOf(s, tone, now),
     startedBy: s.startedBy?.kind === 'claude' ? 'claude' : 'user',
-    url: linkable(s.runs.at(-1)?.url ?? s.devServerUrl),
+    url: isServing ? linkable(s.runs.at(-1)?.url ?? s.devServerUrl) : null,
+    reopen: !isServing && runId ? reopenCommand(runId) : null,
   }
+}
+
+/**
+ * Whether the session's Dev Server still answers: the CLI hasn't exited, and
+ * it's still writing (it heartbeats every 15s, so silence means it was killed).
+ */
+function isDevServerUp(s: CiSession, now: number): boolean {
+  return s.closedAt === undefined && now - s.updatedAt <= STALE_MS
+}
+
+function reopenCommand(runId: string): string {
+  return `npx inngest-ci open ${runId}`
 }
 
 function describe(s: CiSession, tone: CiTone, jobs: readonly CiJob[]): { detail: string; aside: string } {
@@ -306,10 +324,12 @@ export function endingNote(s: CiSession): string {
     }
   }
 
-  const url = s.runs.at(-1)?.url
+  const run = s.runs.at(-1)
 
-  if (url) {
-    lines.push(`Run: ${url}`)
+  if (run?.url && s.closedAt === undefined) {
+    lines.push(`Run: ${run.url}`)
+  } else if (run?.runId) {
+    lines.push(`Reopen the run with \`${reopenCommand(run.runId)}\` in ${s.project.root}.`)
   }
 
   return lines.join('\n')

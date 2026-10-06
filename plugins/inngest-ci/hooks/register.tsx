@@ -140,6 +140,30 @@ export const register: Register = on => {
     )
 
     const target = (line: CiLine) => {
+      // Its Dev Server has stopped: the name copies the command that reopens the run instead.
+      if (!line.url && line.reopen) {
+        const reopen = line.reopen
+
+        return (
+          <Button
+            key={`reopen:${line.id}`}
+            plain
+            dimColor={line.isDim}
+            label={line.target}
+            onPress={() => {
+              void $.ui.copy({ text: reopen, surface }).then(
+                () => {
+                  $.ui.toast(`Its Dev Server has stopped. Copied: ${reopen}`)
+                },
+                () => {
+                  $.ui.toast(`Its Dev Server has stopped. Reopen it with: ${reopen}`)
+                },
+              )
+            }}
+          />
+        )
+      }
+
       if (!line.url) {
         return (
           <Text bold={!line.isDim} dimColor={line.isDim}>
