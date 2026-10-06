@@ -32,6 +32,8 @@ export type CiSession = {
 type CiRun = {
   runId?: string
   url?: string
+  /** Why the run failed, when it failed outside a job's commands too. */
+  reason?: string
   jobs: CiJob[]
 }
 
@@ -255,7 +257,16 @@ function failureOf(s: CiSession, jobs: readonly CiJob[]): string {
     return job.title.replaceAll('`', '')
   }
 
-  return job?.command ? `${job.command.name} failed` : 'failed'
+  if (job?.command) {
+    return `${job.command.name} failed`
+  }
+
+  return runReason(s) ?? 'failed'
+}
+
+/** The latest run's failure reason, on one line. */
+function runReason(s: CiSession): string | undefined {
+  return s.runs.at(-1)?.reason?.split('\n')[0] || undefined
 }
 
 function failedJob(jobs: readonly CiJob[]): CiJob | undefined {
@@ -354,6 +365,8 @@ export function endingNote(s: CiSession): string {
     if (job.title) {
       lines.push(`Failure: ${job.title}`)
     }
+  } else if (s.conclusion === 'failed' && runReason(s)) {
+    lines.push(`Failure: ${runReason(s)}`)
   }
 
   const run = s.runs.at(-1)

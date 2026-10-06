@@ -533,6 +533,23 @@ test('files of another version, or broken, are skipped; an unchanged poll writes
   expect(world.viewWrites).toBe(writes)
 })
 
+test("a run that failed outside a job's commands shows its reason, in the band and to Claude", async ($, on) => {
+  const world = await setUp($, on)
+  const reason = 'Sandbox did not reach RUNNING within 120000 milliseconds'
+
+  write(world, session('s1', { endedAt: T0, updatedAt: T0, conclusion: 'failed', runs: [{ runId: '01RUN', url: 'http://127.0.0.1:24288/run?runID=01RUN', status: 'failed', reason, jobs: [{ id: 'base', status: 'cached' }] }] }))
+  await world.clock.advance(5000)
+
+  const ui = await band($, 'terminal')
+
+  expect(await ui.find({ type: 'Text', text: reason })).toBeDefined()
+  await ui.unmount()
+
+  const sent = await $.prompt.submit({ text: 'next' } as never)
+
+  expect(String(sent.context)).toContain(`Failure: ${reason}`)
+})
+
 test("Claude reads a run's ending once, only for runs this session started", async ($, on) => {
   const world = await setUp($, on)
 
