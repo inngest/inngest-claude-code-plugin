@@ -116,6 +116,24 @@ export function viewOf(sessions: readonly CiSession[], now: number): CiView {
   return { lines, more }
 }
 
+/** The title's summary of the lines drawn: `2 running · 1 failed`, in the band's order. */
+export function summaryOf(view: CiView): string {
+  const counts = new Map<CiTone, number>()
+
+  for (const line of view.lines) {
+    counts.set(line.tone, (counts.get(line.tone) ?? 0) + 1)
+  }
+
+  return [...counts]
+    .sort(([a], [b]) => {
+      return RANK[a] - RANK[b]
+    })
+    .map(([tone, count]) => {
+      return `${count} ${WORD[tone]}`
+    })
+    .join(' · ')
+}
+
 /** How a session reads now, or null once it is gone from the band. */
 function toneOf(s: CiSession, now: number, all: readonly CiSession[]): CiTone | null {
   if (s.endedAt === undefined) {

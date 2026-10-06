@@ -12,7 +12,7 @@ import type { EngineInterface, Register, RenderSurface, Timer } from 'claude-cod
 
 import type { CiLine, CiView } from '../types'
 import { MARK, TICK, TICK_PX, TONE, markSvg, ticksAlt, ticksSvg } from './look'
-import { endingNote, isMineAndEnded, parseSession, viewOf } from './sessions'
+import { endingNote, isMineAndEnded, parseSession, summaryOf, viewOf } from './sessions'
 import type { CiSession } from './sessions'
 
 const VIEW = { plugin: 'inngest-ci', key: 'view' } as const
@@ -228,9 +228,14 @@ export const register: Register = on => {
       )
     }
 
+    // A title and a blank line keep CI apart from whatever else shares the band.
     return (
       <Box flexDirection="column">
-        <Box flexDirection="column" paddingX={1}>
+        <Box flexDirection="column" paddingX={1} paddingTop={1}>
+          <Box flexDirection="row" columnGap={2}>
+            <Text bold>Inngest CI</Text>
+            <Text dimColor>{summaryOf(view)}</Text>
+          </Box>
           {view.lines.map(line => {
             const isClaude = line.startedBy === 'claude'
 

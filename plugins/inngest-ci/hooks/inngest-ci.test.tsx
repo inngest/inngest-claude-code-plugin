@@ -379,6 +379,7 @@ test('five sessions: four lines and + 1 more, as the terminal lays them out', as
   const drawn = (await terminal.drawn()) as { children: unknown[] }
 
   expect(paint(drawn.children[0]).split('\n')).toEqual([
+    ' Inngest CI  3 running · 1 failed',
     ' ● docs     inngest-js ■■■□    pnpm test · test                                        10s  Claude',
     ' ● pr       inngest-js ■■■□    pnpm test · test                                        46s  Claude',
     ' ● nightly  inngest    ■■■■■■■ pnpm test · compat (node:24, db:postgres)            2m 19s  Claude',
