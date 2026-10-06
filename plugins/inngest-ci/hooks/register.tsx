@@ -240,8 +240,6 @@ export const register: Register = on => {
             <Text dimColor>{summaryOf(view)}</Text>
           </Box>
           {view.lines.map(line => {
-            const isClaude = line.startedBy === 'claude'
-
             return (
               <Box key={`line:${line.id}`} flexDirection="row" columnGap={1}>
                 <Box width={1} flexShrink={0}>
@@ -270,11 +268,6 @@ export const register: Register = on => {
                 <Box flexGrow={1} />
                 <Box flexShrink={0}>
                   <Text dimColor>{line.time}</Text>
-                </Box>
-                <Box width={7} flexShrink={0} paddingLeft={1}>
-                  <Text color={isClaude ? 'claude' : undefined} dimColor={!isClaude || line.isDim}>
-                    {isClaude ? 'Claude' : 'you'}
-                  </Text>
                 </Box>
               </Box>
             )
@@ -364,7 +357,7 @@ async function refresh($: EngineInterface): Promise<CiView | undefined> {
   }
 
   const now = await $.clock.now()
-  const view = viewOf(sessions(), now)
+  const view = viewOf(sessions(), now, me)
   const held = await $.state.get(VIEW)
 
   if (JSON.stringify(held.value) !== JSON.stringify(view)) {

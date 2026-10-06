@@ -253,6 +253,20 @@ test('no sessions: the band draws nothing of its own and keeps the other mods', 
   }
 })
 
+test("only runs this Claude session started show: not your own, not other sessions'", async ($, on) => {
+  const world = await setUp($, on)
+
+  write(world, session('mine'), session('yours', { startedBy: { kind: 'user' } }), session('theirs', { startedBy: { kind: 'claude', sessionId: 'someone-else' } }))
+  await world.clock.advance(5000)
+
+  for (const surface of SURFACES) {
+    const ui = await band($, surface)
+
+    expect(await lines(ui)).toEqual(['line:mine'])
+    await ui.unmount()
+  }
+})
+
 test('a rule separates CI from a mod drawing beneath it, and only then', async ($, on) => {
   const world = await setUp($, on)
 
@@ -297,7 +311,6 @@ test('one running session: mark, target, repo, a tick per job, the command, elap
   expect(await terminal.find({ type: 'Text', text: 'inngest-js' })).toBeDefined()
   expect(await terminal.find({ type: 'Text', text: /^pnpm test · test$/ })).toBeDefined()
   expect(await terminal.find({ type: 'Text', text: '46s' })).toBeDefined()
-  expect((await terminal.find({ type: 'Text', text: 'Claude' }))?.props.color).toBe('claude')
 
   const ticks = await terminal.findAll({ type: 'Text', text: /^[■□–]$/ })
 
@@ -392,8 +405,8 @@ test('five sessions: four lines and + 1 more, as the terminal lays them out', as
       ],
     }),
     session('pr'),
-    session('release', { target: { kind: 'pipeline', id: 'release' }, startedBy: { kind: 'user' }, startedAt: T0 - 90_000, endedAt: T0 - 2_000, conclusion: 'failed', runs: FAILED_RUN, project: { root: '/repo/other', name: 'other' } }),
-    session('done', { project: { root: '/repo/inngest', name: 'inngest' }, repo: { fullName: 'inngest/inngest' }, startedBy: { kind: 'user' }, startedAt: T0 - 200_000, endedAt: T0 - 178_000, updatedAt: T0 - 178_000, conclusion: 'passed' }),
+    session('release', { target: { kind: 'pipeline', id: 'release' }, startedAt: T0 - 90_000, endedAt: T0 - 2_000, conclusion: 'failed', runs: FAILED_RUN, project: { root: '/repo/other', name: 'other' } }),
+    session('done', { project: { root: '/repo/inngest', name: 'inngest' }, repo: { fullName: 'inngest/inngest' }, startedAt: T0 - 200_000, endedAt: T0 - 178_000, updatedAt: T0 - 178_000, conclusion: 'passed' }),
     session('lint-job', { target: { kind: 'job', id: 'lint' }, startedAt: T0 - 300_000, endedAt: T0 - 30_000, conclusion: 'cancelled' }),
     session('docs', { target: { kind: 'pipeline', id: 'docs' }, startedAt: T0 - 5_000 }),
   )
@@ -413,10 +426,10 @@ test('five sessions: four lines and + 1 more, as the terminal lays them out', as
 
   expect(paint(drawn.children[0]).split('\n')).toEqual([
     ' Inngest CI  3 running · 1 failed',
-    ' ● docs     inngest-js ■■■□    pnpm test · test                                        10s  Claude',
-    ' ● pr       inngest-js ■■■□    pnpm test · test                                        46s  Claude',
-    ' ● nightly  inngest    ■■■■■■■ pnpm test · compat (node:24, db:postgres)            2m 19s  Claude',
-    ' ✕ release  inngest-js ■■–     pnpm build exited with 1                           just now  you   ',
+    ' ● docs     inngest-js ■■■□    pnpm test · test                                                10s',
+    ' ● pr       inngest-js ■■■□    pnpm test · test                                                46s',
+    ' ● nightly  inngest    ■■■■■■■ pnpm test · compat (node:24, db:postgres)                    2m 19s',
+    ' ✕ release  inngest-js ■■–     pnpm build exited with 1                                   just now',
     ' + 1 more  lint in inngest-js cancelled',
   ])
   await terminal.unmount()

@@ -86,8 +86,12 @@ export function parseSession(text: string): CiSession | null {
   return { ...(s as CiSession), runs: Array.isArray(s.runs) ? s.runs : [] }
 }
 
-/** The band's lines for these sessions at `now`. */
-export function viewOf(sessions: readonly CiSession[], now: number): CiView {
+/** The band's lines at `now`: only the sessions this Claude session (`me`) started, subagents included. */
+export function viewOf(all: readonly CiSession[], now: number, me: string): CiView {
+  const sessions = all.filter(s => {
+    return isMine(s, me)
+  })
+
   const shown = sessions
     .map(s => {
       return { s, tone: toneOf(s, now, sessions) }
@@ -184,7 +188,6 @@ function lineOf(s: CiSession, tone: CiTone, now: number): CiLine {
     detail,
     aside,
     time: timeOf(s, tone, now),
-    startedBy: s.startedBy?.kind === 'claude' ? 'claude' : 'user',
     url: isServing ? linkable(s.runs.at(-1)?.url ?? s.devServerUrl) : null,
     reopen: !isServing && runId ? reopenCommand(runId) : null,
   }
@@ -319,9 +322,14 @@ export function linkable(url: string | undefined): string | null {
   return null
 }
 
+/** Whether this Claude session (or one of its subagents, which share its id) started the session. */
+export function isMine(s: CiSession, me: string): boolean {
+  return s.startedBy?.kind === 'claude' && s.startedBy.sessionId === me
+}
+
 /** Whether this Claude session started the session and it has ended. */
 export function isMineAndEnded(s: CiSession, me: string): boolean {
-  return s.endedAt !== undefined && s.startedBy?.kind === 'claude' && s.startedBy.sessionId === me
+  return s.endedAt !== undefined && isMine(s, me)
 }
 
 /** The few lines Claude reads beside its next prompt once a session it started ends. */
