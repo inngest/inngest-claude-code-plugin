@@ -288,10 +288,11 @@ export const register: Register = on => {
             </Box>
           )}
         </Box>
+        {/* Long enough for any surface, clipped to one row: a cell is wider on the desktop, and truncating would end the rule in an ellipsis. */}
         {isAnotherModsDrawing(theirs) && (
-          <Box paddingX={1}>
-            <Text dimColor wrap="truncate-end">
-              {'─'.repeat(Math.max(1, e.props.bodyColumns - 2))}
+          <Box paddingX={1} height={1} overflow="hidden">
+            <Text dimColor wrap="wrap">
+              {'─'.repeat(e.props.bodyColumns * 2)}
             </Text>
           </Box>
         )}
