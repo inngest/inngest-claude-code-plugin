@@ -52,40 +52,12 @@ const TICK_FILL: Record<CiStatus, string> = {
   cancelled: `fill="${HEX.gray}" fill-opacity=".6"`,
 }
 
-/** Rows of space the desktop rule takes, its line in the middle. */
-export const RULE_PX = 17
-
-/** A rule across the band on the desktop, between two mods' blocks: visible on a dark band, with room either side. */
-export function ruleSvg(widthPx: number): string {
-  const width = Math.max(1, Math.round(widthPx))
-
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${RULE_PX}" viewBox="0 0 ${width} ${RULE_PX}"><line x1="0" y1="${RULE_PX / 2}" x2="${width}" y2="${RULE_PX / 2}" stroke="${HEX.gray}" stroke-opacity=".7"/></svg>`
-}
-
 /**
- * Whether a drawn tree shows anything. The band hands down a tree even when
- * nothing beneath draws, so the separator asks this instead of testing for null.
+ * Whether a mod after this one drew in the band: `next(e)` answers the
+ * engine's own drawing, `{ type: 'engine' }`, unless one did.
  */
-export function hasContent(node: unknown): boolean {
-  if (node === null || node === undefined || node === false) {
-    return false
-  }
-
-  if (typeof node === 'string' || typeof node === 'number') {
-    return String(node).trim() !== ''
-  }
-
-  if (Array.isArray(node)) {
-    return node.some(hasContent)
-  }
-
-  const { type, props, children } = node as { type?: unknown; props?: { children?: unknown }; children?: unknown }
-
-  if (type !== 'Box' && type !== 'Text') {
-    return true
-  }
-
-  return hasContent(children) || hasContent(props?.children)
+export function isAnotherModsDrawing(node: unknown): boolean {
+  return typeof node === 'object' && node !== null && (node as { type?: unknown }).type !== 'engine'
 }
 
 /** Pixels per tick on the desktop. */

@@ -13,6 +13,7 @@
 import { expect, mock, test } from 'claude-code/testing'
 import type { Engine } from 'claude-code/testing'
 import type { On } from 'claude-code'
+import { isAnotherModsDrawing } from './look'
 
 const ME = 'claude-session-me'
 const T0 = 1_791_240_000_000
@@ -252,6 +253,24 @@ test('no sessions: the band draws nothing of its own and keeps the other mods', 
   }
 })
 
+test('a rule separates CI from a mod drawing beneath it, and only then', async ($, on) => {
+  const world = await setUp($, on)
+
+  write(world, session('s1'))
+  await world.clock.advance(5000)
+
+  for (const surface of SURFACES) {
+    const ui = await band($, surface)
+
+    expect(await ui.find({ type: 'Text', text: /^─+$/ })).toBeDefined()
+    await ui.unmount()
+  }
+
+  expect(isAnotherModsDrawing({ type: 'engine', ref: 1 })).toBe(false)
+  expect(isAnotherModsDrawing(null)).toBe(false)
+  expect(isAnotherModsDrawing({ type: 'Text', props: {}, children: ['another mod'] })).toBe(true)
+})
+
 test("between commands, a running job's activity says what it's doing", async ($, on) => {
   const world = await setUp($, on)
   const base = session('s1') as { runs: { jobs: Record<string, unknown>[] }[] }
@@ -298,7 +317,7 @@ test('one running session: mark, target, repo, a tick per job, the command, elap
 
   expect(link?.props.href).toBe('http://localhost:24288/run?runID=01RUN')
   expect(link?.props.label).toBe('pr')
-  expect((await desktop.findAll({ type: 'Svg' })).map(svg => svg.props.alt)).toEqual(['Inngest', 'running', '4 jobs: 1 from cache, 1 passed, 1 running, 1 queued', ''])
+  expect((await desktop.findAll({ type: 'Svg' })).map(svg => svg.props.alt)).toEqual(['Inngest', 'running', '4 jobs: 1 from cache, 1 passed, 1 running, 1 queued'])
   await desktop.unmount()
 })
 

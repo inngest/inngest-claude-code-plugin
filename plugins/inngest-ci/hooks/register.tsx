@@ -11,7 +11,7 @@
 import type { EngineInterface, Register, RenderSurface, Timer } from 'claude-code'
 
 import type { CiLine, CiView } from '../types'
-import { LOGO_SVG, MARK, RULE_PX, TICK, TICK_PX, TONE, hasContent, markSvg, ruleSvg, ticksAlt, ticksSvg } from './look'
+import { LOGO_SVG, MARK, TICK, TICK_PX, TONE, isAnotherModsDrawing, markSvg, ticksAlt, ticksSvg } from './look'
 import { endingNote, isMineAndEnded, parseSession, summaryOf, viewOf } from './sessions'
 import type { CiSession } from './sessions'
 
@@ -288,18 +288,14 @@ export const register: Register = on => {
             </Box>
           )}
         </Box>
-        {hasContent(theirs) && (
-          <Box flexDirection="column">
-            <Box paddingX={1}>
-              {Svg ? (
-                <Svg source={ruleSvg((e.props.bodyColumns - 2) * CELL_PX)} alt="" width={(e.props.bodyColumns - 2) * CELL_PX} height={RULE_PX} />
-              ) : (
-                <Text dimColor>{'─'.repeat(Math.max(1, e.props.bodyColumns - 2))}</Text>
-              )}
-            </Box>
-            {theirs}
+        {isAnotherModsDrawing(theirs) && (
+          <Box paddingX={1}>
+            <Text dimColor wrap="truncate-end">
+              {'─'.repeat(Math.max(1, e.props.bodyColumns - 2))}
+            </Text>
           </Box>
         )}
+        {theirs}
       </Box>
     )
   })
