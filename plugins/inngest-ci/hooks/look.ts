@@ -52,11 +52,14 @@ const TICK_FILL: Record<CiStatus, string> = {
   cancelled: `fill="${HEX.gray}" fill-opacity=".6"`,
 }
 
-/** A hairline across the band on the desktop, between two mods' blocks. */
+/** Rows of space the desktop rule takes, its line in the middle. */
+export const RULE_PX = 17
+
+/** A rule across the band on the desktop, between two mods' blocks: visible on a dark band, with room either side. */
 export function ruleSvg(widthPx: number): string {
   const width = Math.max(1, Math.round(widthPx))
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="9" viewBox="0 0 ${width} 9"><line x1="0" y1="4.5" x2="${width}" y2="4.5" stroke="${HEX.gray}" stroke-opacity=".35"/></svg>`
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${RULE_PX}" viewBox="0 0 ${width} ${RULE_PX}"><line x1="0" y1="${RULE_PX / 2}" x2="${width}" y2="${RULE_PX / 2}" stroke="${HEX.gray}" stroke-opacity=".7"/></svg>`
 }
 
 /**
