@@ -22,9 +22,9 @@ const SETUP = { plugin: 'inngest-ci', key: 'setup' } as const
 /** `$.store` key: the project roots where the person hid the set-up line. */
 const DISMISSED = 'dismissed-setup'
 
-/** What "Set up CI" asks Claude to do. */
+/** The ask "Ask Claude to set up Inngest CI" puts in the prompt box, for the person to send or edit. */
 const SETUP_PROMPT =
-  'Set up Inngest CI (`@inngest/ci`) for this project using the inngest-ci skill: install it, write a first pipeline that installs, lints and tests, serve `ci.functions()`, add the `ci` config to `inngest.json`, then run it once with `npx inngest-ci <pipeline> --no-interactive` and fix anything that fails.'
+  'Set up Inngest CI for this project with the inngest-ci skill: a first pipeline that installs, lints and tests, then run it once with `npx inngest-ci <pipeline> --no-interactive` and fix anything that fails.'
 
 const LIVE_POLL_MS = 500
 const IDLE_POLL_MS = 5000
@@ -167,33 +167,55 @@ export const register: Register = on => {
       </Box>
     )
 
-    // A JS or TS project without `@inngest/ci`: offer to set it up, once per project until hidden.
+    // A JS or TS project without `@inngest/ci`: one dim line, once per project, as designed. Choosing it puts the ask in
+    // the prompt box rather than sending it; it leaves when the first run starts or with "Not now".
     if (!view?.lines.length && setup) {
+      const ask = (
+        <Button
+          key="setup"
+          plain
+          label={Svg ? 'Ask Claude to set up Inngest CI' : 'set up Inngest CI'}
+          onPress={() => {
+            void askToSetUp($)
+          }}
+        />
+      )
+
+      const notNow = (
+        <Button
+          key="setup-hide"
+          plain
+          dimColor
+          label="Not now"
+          onPress={() => {
+            void hideSetup($, setup.root)
+          }}
+        />
+      )
+
       return stacked(
-        <Box flexDirection="row" columnGap={2} paddingX={1}>
-          {title}
-          <Text dimColor>not set up in this project</Text>
-          <Box flexGrow={1} />
-          <Button
-            key="setup"
-            plain
-            label="Set up CI"
-            onPress={() => {
-              void $.prompt.submit({ text: SETUP_PROMPT })
-            }}
-          />
-          <Button
-            key="setup-hide"
-            plain
-            dimColor
-            label="✕"
-            onPress={() => {
-              void hideSetup($, setup.root)
-            }}
-          />
-        </Box>,
+        Svg ? (
+          <Box flexDirection="row" columnGap={1} paddingX={1}>
+            <Svg source={markSvg('cancelled')} alt="" width={12} height={12} />
+            <Text dimColor>{`${setup.name} has no CI pipelines yet.`}</Text>
+            {ask}
+            <Box flexGrow={1} />
+            {notNow}
+          </Box>
+        ) : (
+          <Box flexDirection="row" paddingX={1}>
+            <Text dimColor>{`${MARK.cancelled} `}</Text>
+            <Text bold>{setup.name}</Text>
+            <Text dimColor> has no CI pipelines yet. Ask Claude to </Text>
+            {ask}
+            <Text dimColor> and runs will show here.</Text>
+            <Box flexGrow={1} />
+            {notNow}
+          </Box>
+        ),
       )
     }
+
     const opener = host?.opener ?? ['xdg-open']
     const targetWidth = columnWidth(view.lines, 'target', 8, 14)
     const repoWidth = columnWidth(view.lines, 'repo', 8, 16)
@@ -484,7 +506,7 @@ async function hasCi($: EngineInterface): Promise<boolean> {
 }
 
 /** The set-up line to show: a JS or TS project without `@inngest/ci` whose line the person hasn't hidden. */
-async function setupOf($: EngineInterface): Promise<{ root: string } | null> {
+async function setupOf($: EngineInterface): Promise<{ root: string; name: string } | null> {
   const { root, hasCi: isSetUp } = await projectOf($)
 
   if (!root || isSetUp) {
@@ -493,7 +515,23 @@ async function setupOf($: EngineInterface): Promise<{ root: string } | null> {
 
   const hidden = await hiddenSetups($)
 
-  return hidden.includes(root) ? null : { root }
+  return hidden.includes(root) ? null : { root, name: root.split('/').pop() || root }
+}
+
+/** Puts the set-up ask in the prompt box, after whatever the person has typed; where the box can't take it, says it instead. */
+async function askToSetUp($: EngineInterface): Promise<void> {
+  const filled = await $.prompt
+    .read()
+    .then(({ text }) => {
+      return $.prompt.fill({ text: text.trim() ? `\n${SETUP_PROMPT}` : SETUP_PROMPT, mode: 'append' })
+    })
+    .catch(() => {
+      return undefined
+    })
+
+  if (!filled?.isFilled) {
+    $.ui.toast(`Ask Claude: ${SETUP_PROMPT}`)
+  }
 }
 
 /** Hides the set-up line for this project in every later session too. */

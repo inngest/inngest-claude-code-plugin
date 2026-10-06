@@ -49,8 +49,8 @@ declare module 'claude-code' {
       view: CiView
       /** Sessions this Claude session started whose end Claude was told about. */
       told: string[]
-      /** The project the set-up line offers to set up CI in, or null when it doesn't show. */
-      setup: { root: string } | null
+      /** The project the set-up line offers to set up CI in (its folder and name), or null when it doesn't show. */
+      setup: { root: string; name: string } | null
     }
   }
 }
