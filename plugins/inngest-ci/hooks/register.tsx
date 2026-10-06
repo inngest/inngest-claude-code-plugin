@@ -260,12 +260,14 @@ export const register: Register = on => {
                     {ticks(line)}
                   </Box>
                 )}
-                <Box flexGrow={1} flexShrink={1}>
+                <Box flexShrink={1}>
                   <Text wrap="truncate-end" color={line.tone === 'failed' ? 'error' : undefined} dimColor={line.isDim}>
                     {line.detail}
                     {line.aside && <Text dimColor>{` · ${line.aside}`}</Text>}
                   </Text>
                 </Box>
+                {/* An empty spacer, as Meat Proxy's header uses: the desktop doesn't grow a Box that holds text. */}
+                <Box flexGrow={1} />
                 <Box flexShrink={0}>
                   <Text dimColor>{line.time}</Text>
                 </Box>
