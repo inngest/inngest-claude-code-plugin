@@ -11,7 +11,7 @@
 import type { EngineInterface, Register, RenderSurface, Timer } from 'claude-code'
 
 import type { CiLine, CiView } from '../types'
-import { MARK, TICK, TICK_PX, TONE, markSvg, ticksAlt, ticksSvg } from './look'
+import { LOGO_SVG, MARK, TICK, TICK_PX, TONE, markSvg, ticksAlt, ticksSvg } from './look'
 import { endingNote, isMineAndEnded, parseSession, summaryOf, viewOf } from './sessions'
 import type { CiSession } from './sessions'
 
@@ -228,12 +228,15 @@ export const register: Register = on => {
       )
     }
 
-    // A title and a blank line keep CI apart from whatever else shares the band.
+    // Whoever stacks two blocks in the band puts the gap between them, so a band with only CI in it has none.
     return (
       <Box flexDirection="column">
-        <Box flexDirection="column" paddingX={1} paddingTop={1}>
+        <Box flexDirection="column" paddingX={1}>
           <Box flexDirection="row" columnGap={2}>
-            <Text bold>Inngest CI</Text>
+            <Box flexDirection="row" columnGap={1}>
+              {Svg && <Svg source={LOGO_SVG} alt="Inngest" width={14} height={14} />}
+              <Text bold>Inngest CI</Text>
+            </Box>
             <Text dimColor>{summaryOf(view)}</Text>
           </Box>
           {view.lines.map(line => {
@@ -283,7 +286,7 @@ export const register: Register = on => {
             </Box>
           )}
         </Box>
-        {theirs}
+        {theirs && <Box paddingTop={1}>{theirs}</Box>}
       </Box>
     )
   })
