@@ -30,13 +30,16 @@ type World = {
   ran: string[][]
   /** Writes of the band's view: an unchanged poll must add none. */
   viewWrites: number
+  /** Prompts the mod submitted itself. */
+  submitted: string[]
 }
 
 async function setUp($: Engine, on: On): Promise<World> {
-  const world: World = { files: new Map(), clock: mock.clock(on, { now: T0 }), ran: [], viewWrites: 0 }
+  const world: World = { files: new Map(), clock: mock.clock(on, { now: T0 }), ran: [], viewWrites: 0, submitted: [] }
 
   put(world, `${DIR}/project/package.json`, '{"name":"project"}')
   mock.env(on, { INNGEST_CI_STATE_DIR: `${DIR}/state`, HOME: '/home/me' })
+  mock.store(on)
 
   on('fs.list', ($, e) => {
     const entries = [...world.files].flatMap(([path, file]) => {
@@ -90,6 +93,8 @@ async function setUp($: Engine, on: On): Promise<World> {
   })
 
   on('prompt.submit', ($, e) => {
+    world.submitted.push(e.text)
+
     return { text: e.text, context: e.context }
   })
 
@@ -543,6 +548,51 @@ test("Claude reads a run's ending once, only for runs this session started", asy
   const again = await $.prompt.submit({ text: 'again' } as never)
 
   expect(again.context).toBeUndefined()
+})
+
+test("a JS project without @inngest/ci offers to set it up, and hiding the offer keeps it hidden", async ($, on) => {
+  const world = await setUp($, on)
+
+  await world.clock.advance(5000)
+
+  for (const surface of SURFACES) {
+    const ui = await band($, surface)
+
+    expect(await ui.find({ type: 'Text', text: 'not set up in this project' })).toBeDefined()
+    expect(await ui.find({ type: 'Text', text: 'another mod' })).toBeDefined()
+    await ui.unmount()
+  }
+
+  const ui = await band($, 'terminal')
+
+  await ui.press({ key: 'setup' })
+  expect(world.submitted.at(-1)).toContain('using the inngest-ci skill')
+
+  await ui.press({ key: 'setup-hide' })
+  await world.clock.advance(5000)
+  expect(await ui.find({ type: 'Text', text: 'not set up in this project' })).toBeUndefined()
+  await ui.unmount()
+})
+
+test("no set-up offer where @inngest/ci is set up, or outside a JS project", async ($, on) => {
+  const world = await setUp($, on)
+
+  put(world, `${DIR}/project/inngest.json`, '{"ci":{"start":"tsx server.ts"}}')
+  await world.clock.advance(5000)
+
+  const withCi = await band($, 'terminal')
+
+  expect(await withCi.find({ type: 'Text', text: 'not set up in this project' })).toBeUndefined()
+  await withCi.unmount()
+
+  world.files.delete(`${DIR}/project/inngest.json`)
+  world.files.delete(`${DIR}/project/package.json`)
+  await world.clock.advance(31_000)
+
+  const notJs = await band($, 'terminal')
+
+  expect(await notJs.find({ type: 'Text', text: 'not set up in this project' })).toBeUndefined()
+  await notJs.unmount()
 })
 
 test('Claude reads how to run CI only where @inngest/ci is set up', async ($, on) => {

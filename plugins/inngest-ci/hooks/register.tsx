@@ -17,6 +17,14 @@ import type { CiSession } from './sessions'
 
 const VIEW = { plugin: 'inngest-ci', key: 'view' } as const
 const TOLD = { plugin: 'inngest-ci', key: 'told' } as const
+const SETUP = { plugin: 'inngest-ci', key: 'setup' } as const
+
+/** `$.store` key: the project roots where the person hid the set-up line. */
+const DISMISSED = 'dismissed-setup'
+
+/** What "Set up CI" asks Claude to do. */
+const SETUP_PROMPT =
+  'Set up Inngest CI (`@inngest/ci`) for this project using the inngest-ci skill: install it, write a first pipeline that installs, lints and tests, serve `ci.functions()`, add the `ci` config to `inngest.json`, then run it once with `npx inngest-ci <pipeline> --no-interactive` and fix anything that fails.'
 
 const LIVE_POLL_MS = 500
 const IDLE_POLL_MS = 5000
@@ -39,6 +47,9 @@ This project runs CI with \`@inngest/ci\`. To run it, use \`npx inngest-ci <pipe
 
 Exit codes: 0 passed, 1 failed or cancelled, 2 setup error (the output says what to change). \`inngest-ci\` starts and stops its own Dev Server and app, so do not start a Dev Server or the app by hand for CI. The \`inngest-ci\` skill covers writing pipelines and reading failures.`
 
+/** The project around the working directory: its nearest `package.json` folder, and whether it uses `@inngest/ci`. */
+type Project = { root: string | null; hasCi: boolean }
+
 type Host = {
   /** Where the CLI keeps `sessions/`. */
   dir: string
@@ -48,7 +59,7 @@ type Host = {
 
 // This load's own memory; a hot reload starts it over and the first poll fills it again.
 const files = new Map<string, { mtimeMs: number; session: CiSession | null }>()
-const usesCi = new Map<string, { at: number; value: boolean }>()
+const projects = new Map<string, { at: number; project: Project }>()
 let host: Host | undefined
 let me = ''
 let timer: Timer | undefined
@@ -59,6 +70,8 @@ export const register: Register = on => {
 
     host = await hostOf($)
     me = await $.session.id()
+    // This mod draws no status line: clear any an earlier load left.
+    $.ui.status(undefined)
     void poll($)
 
     return started
@@ -117,8 +130,9 @@ export const register: Register = on => {
     // Every mod shares the band: what the mods beneath draw stays, below ours.
     const theirs = await next(e)
     const view = (await $.state.get(VIEW)).value
+    const setup = (await $.state.get(SETUP)).value
 
-    if (e.props.hasSurvey || !view?.lines.length) {
+    if (e.props.hasSurvey || (!view?.lines.length && !setup)) {
       return theirs
     }
 
@@ -127,6 +141,59 @@ export const register: Register = on => {
     // Only the desktop draws Svg in the band; the terminal draws glyphs.
     const Svg = e.surface === 'desktop' && 'Svg' in table ? table.Svg : undefined
     const surface = e.surface
+
+    // Whoever stacks two blocks in the band draws the rule between them, so a band with only CI in it has none.
+    // The rule is long enough for any surface and clipped to one row: a cell is wider on the desktop, and truncating would end it in an ellipsis.
+    const stacked = (ours: unknown) => {
+      return (
+        <Box flexDirection="column">
+          {ours}
+          {isAnotherModsDrawing(theirs) && (
+            <Box paddingX={1} height={1} overflow="hidden">
+              <Text dimColor wrap="wrap">
+                {'─'.repeat(e.props.bodyColumns * 2)}
+              </Text>
+            </Box>
+          )}
+          {theirs}
+        </Box>
+      )
+    }
+
+    const title = (
+      <Box flexDirection="row" columnGap={1}>
+        {Svg && <Svg source={LOGO_SVG} alt="Inngest" width={14} height={14} />}
+        <Text bold>Inngest CI</Text>
+      </Box>
+    )
+
+    // A JS or TS project without `@inngest/ci`: offer to set it up, once per project until hidden.
+    if (!view?.lines.length && setup) {
+      return stacked(
+        <Box flexDirection="row" columnGap={2} paddingX={1}>
+          {title}
+          <Text dimColor>not set up in this project</Text>
+          <Box flexGrow={1} />
+          <Button
+            key="setup"
+            plain
+            label="Set up CI"
+            onPress={() => {
+              void $.prompt.submit({ text: SETUP_PROMPT })
+            }}
+          />
+          <Button
+            key="setup-hide"
+            plain
+            dimColor
+            label="✕"
+            onPress={() => {
+              void hideSetup($, setup.root)
+            }}
+          />
+        </Box>,
+      )
+    }
     const opener = host?.opener ?? ['xdg-open']
     const targetWidth = columnWidth(view.lines, 'target', 8, 14)
     const repoWidth = columnWidth(view.lines, 'repo', 8, 16)
@@ -228,15 +295,10 @@ export const register: Register = on => {
       )
     }
 
-    // Whoever stacks two blocks in the band draws the rule between them, so a band with only CI in it has none.
-    return (
-      <Box flexDirection="column">
+    return stacked(
         <Box flexDirection="column" paddingX={1}>
           <Box flexDirection="row" columnGap={2}>
-            <Box flexDirection="row" columnGap={1}>
-              {Svg && <Svg source={LOGO_SVG} alt="Inngest" width={14} height={14} />}
-              <Text bold>Inngest CI</Text>
-            </Box>
+            {title}
             <Text dimColor>{summaryOf(view)}</Text>
           </Box>
           {view.lines.map(line => {
@@ -280,17 +342,7 @@ export const register: Register = on => {
               <Text dimColor wrap="truncate-end">{`${view.more.count} more  ${view.more.text}`}</Text>
             </Box>
           )}
-        </Box>
-        {/* Long enough for any surface, clipped to one row: a cell is wider on the desktop, and truncating would end the rule in an ellipsis. */}
-        {isAnotherModsDrawing(theirs) && (
-          <Box paddingX={1} height={1} overflow="hidden">
-            <Text dimColor wrap="wrap">
-              {'─'.repeat(e.props.bodyColumns * 2)}
-            </Text>
-          </Box>
-        )}
-        {theirs}
-      </Box>
+        </Box>,
     )
   })
 }
@@ -364,6 +416,12 @@ async function refresh($: EngineInterface): Promise<CiView | undefined> {
     await $.state.set(VIEW, view)
   }
 
+  const setup = view.lines.length ? null : await setupOf($)
+
+  if (JSON.stringify((await $.state.get(SETUP)).value ?? null) !== JSON.stringify(setup)) {
+    await $.state.set(SETUP, setup)
+  }
+
   // A fresh process (not a hot reload) counts every run that already ended as told.
   if ((await $.state.get(TOLD)).value === undefined) {
     const ended = sessions().filter(s => {
@@ -420,46 +478,85 @@ async function openUrl($: EngineInterface, argv: string[], surface: RenderSurfac
   }
 }
 
-/** Whether this working directory uses `@inngest/ci`; a yes is kept, a no is asked again after a while. */
+/** Whether this working directory uses `@inngest/ci`. */
 async function hasCi($: EngineInterface): Promise<boolean> {
-  const cwd = await $.session.cwd()
-  const now = await $.clock.now()
-  const known = usesCi.get(cwd)
-
-  if (known && (known.value || now - known.at < RECHECK_MS)) {
-    return known.value
-  }
-
-  const value = await findsCi($, cwd)
-
-  usesCi.set(cwd, { at: now, value })
-
-  return value
+  return (await projectOf($)).hasCi
 }
 
-/** Whether `@inngest/ci` is set up in `cwd` or a folder above it, up to the repository root. */
-async function findsCi($: EngineInterface, cwd: string): Promise<boolean> {
+/** The set-up line to show: a JS or TS project without `@inngest/ci` whose line the person hasn't hidden. */
+async function setupOf($: EngineInterface): Promise<{ root: string } | null> {
+  const { root, hasCi: isSetUp } = await projectOf($)
+
+  if (!root || isSetUp) {
+    return null
+  }
+
+  const hidden = await hiddenSetups($)
+
+  return hidden.includes(root) ? null : { root }
+}
+
+/** Hides the set-up line for this project in every later session too. */
+async function hideSetup($: EngineInterface, root: string): Promise<void> {
+  // Read again right before writing: other sessions share the store.
+  const hidden = await hiddenSetups($)
+
+  await $.store.set(DISMISSED, [...new Set([...hidden, root])])
+  await $.state.set(SETUP, null)
+}
+
+/** The project roots where the set-up line is hidden; a store that can't be read hides nothing. */
+async function hiddenSetups($: EngineInterface): Promise<string[]> {
+  const value = await $.store.get(DISMISSED).catch(() => {
+    return undefined
+  })
+
+  return Array.isArray(value) ? (value as string[]) : []
+}
+
+/** The project around the working directory; a project with `@inngest/ci` is kept, any other is looked at again after a while. */
+async function projectOf($: EngineInterface): Promise<Project> {
+  const cwd = await $.session.cwd()
+  const now = await $.clock.now()
+  const known = projects.get(cwd)
+
+  if (known && (known.project.hasCi || now - known.at < RECHECK_MS)) {
+    return known.project
+  }
+
+  const project = await scanProject($, cwd)
+
+  projects.set(cwd, { at: now, project })
+
+  return project
+}
+
+/** Walks up from `cwd` to the repository root: the nearest `package.json` is the project, and any folder on the way can set up `@inngest/ci`. */
+async function scanProject($: EngineInterface, cwd: string): Promise<Project> {
   let dir = cwd
+  let root: string | null = null
 
   for (let depth = 0; depth < MAX_DEPTH; depth += 1) {
     const config = await readJson($, `${dir}/inngest.json`)
     const pkg = await readJson($, `${dir}/package.json`)
     const deps = { ...(pkg?.dependencies as object | undefined), ...(pkg?.devDependencies as object | undefined) }
 
+    root ??= pkg ? dir : null
+
     if ((config?.ci && typeof config.ci === 'object') || '@inngest/ci' in deps) {
-      return true
+      return { root, hasCi: true }
     }
 
     const parent = dir.replace(/\/[^/]*$/, '')
 
     if (!parent || parent === dir || (await $.fs.exists(`${dir}/.git`))) {
-      return false
+      break
     }
 
     dir = parent
   }
 
-  return false
+  return { root, hasCi: false }
 }
 
 async function readJson($: EngineInterface, path: string): Promise<Record<string, unknown> | undefined> {
