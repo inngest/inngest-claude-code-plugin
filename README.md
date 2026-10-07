@@ -13,12 +13,13 @@ functions and agents, audit codebases, configure flow control and realtime,
 and migrate SDK versions. Cloud operations work in chat; repository edits and
 local commands require a coding host.
 
-> **Development:** v0.4.0 adds Cloud OAuth MCP. Directory submission is pending. We'd love your feedback — [open an issue](https://github.com/inngest/inngest-claude-code-plugin/issues), drop into our [Discord](https://www.inngest.com/discord), or ping [@inngest](https://twitter.com/inngest) on socials.
+> Inngest is published in Claude's plugin directory. For feedback, [open an issue](https://github.com/inngest/inngest-claude-code-plugin/issues) or join our [Discord](https://www.inngest.com/discord).
 
 ## What's included
 
 - **14 skills** covering setup, events, durable functions, steps, flow control, middleware, realtime, AI agents, CLI/dev-server workflows, API CLI operations, REST API fallback, brownfield audits, and v3→v4 migration — Claude Code loads the right one automatically based on what you're building.
 - **Cloud OAuth MCP.** Connect your account in the host and use `inngest-cloud` to inspect deployed apps, functions, runs, traces, events, and Insights. CLI and REST skills remain available for terminal or raw HTTP work.
+- **`/inngest:connect` command** — check the active Cloud connection, guide OAuth sign-in, and diagnose prior MCP installs without resetting Claude. Included in the v0.4.1 candidate.
 - **`/inngest:debug-run` command** — hand Claude Code a run ID and it pulls the trace, explains the failing step, and fixes the code when requested.
 - **`/inngest:audit` command** — point Claude Code at an existing codebase and it finds durability gaps (polling loops, manual retries, fire-and-forget promises, queue libraries), prioritizes them, and proposes Inngest refactors.
 - **Cloud MCP connection** bundled by default, with an optional local Dev Server connection for Claude Code.
@@ -27,7 +28,17 @@ local commands require a coding host.
 
 ## Installation
 
-### Claude Code marketplace
+### Claude directory
+
+Install Inngest from [Claude's directory](https://claude.ai/directory), then
+connect your Inngest account in the plugin's connector controls. You do not need
+to add a second custom Inngest connector. In Claude Code, sign in with the same
+Claude subscription account and check `/plugin` and `/mcp` for synced installs.
+
+### Claude Code repository marketplace
+
+Use this alternative if the directory install is unavailable. Choose one
+installation source; a local install can shadow an account-synced copy.
 
 ```
 /plugin marketplace add inngest/inngest-claude-code-plugin
@@ -44,17 +55,31 @@ claude --plugin-dir /path/to/inngest-claude-code-plugin
 
 ## Quick start
 
-1. Install the plugin from this repository's marketplace for Claude Code.
+1. Install the plugin from the directory or this repository's marketplace.
 2. Open `/mcp` and complete OAuth sign-in for the Inngest Cloud connection.
-3. Ask: "In staging, find recent failed runs and explain the failed steps."
+3. Ask: "Use Inngest MCP to show my account and environments."
 
 For local development, start your app and `inngest dev`, then add the optional
 local MCP connection described below. Coding skills remain available for
 building workflows, auditing code, and SDK migrations.
 
-For hosted Claude, use the endpoint as a custom connector while the directory
-submission is pending. The connector provides tools; the plugin bundle adds
-skills. See [submission materials](docs/submission.md).
+For hosted Claude, complete sign-in through the plugin's connector controls.
+If a prior connection exists, see the recovery steps below.
+
+### Connection problems or prior installs
+
+Run `/inngest:connect` with the v0.4.1 candidate, or inspect `/mcp` directly.
+Claude Code can prefer a manually added MCP server over the plugin when both
+use the same endpoint, even with different names. Authenticate the active
+entry first. Reuse it if it works; do not reset Claude or delete your history.
+
+See [connection testing and recovery](docs/connection-testing.md) for isolated
+CLI profiles, Desktop tests, and targeted recovery. To prepare a clean CLI
+test without changing your normal profile:
+
+```sh
+bash scripts/test-install.sh clean
+```
 
 ## Skills
 
@@ -145,8 +170,7 @@ Use the actual port from the Dev Server's startup output if it differs from
 8288. The Cloud connection remains separate. Hosted chat cannot reach localhost.
 
 See [submission materials](docs/submission.md) for directory packaging, listing
-copy, reviewer tests, and the remaining release gates. This repository can be
-installed for development before a directory listing is approved.
+copy, and reviewer tests.
 
 ## What you can do
 
@@ -219,7 +243,7 @@ See [`eval/README.md`](./eval/README.md) for prompt format, judge config, and ho
 
 ## Beta feedback
 
-This is the v0.4.0 development candidate. We're shipping early to learn from real usage:
+We're improving the plugin based on real usage:
 
 - **What's missing:** open a [GitHub issue](https://github.com/inngest/inngest-claude-code-plugin/issues) — even a one-liner helps.
 - **What's broken:** same place. Include the prompt and the skill that fired (or didn't).

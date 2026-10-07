@@ -30,6 +30,7 @@
         "./skills/inngest-cloud"
       ],
       "commands": [
+        "./commands/connect.md",
         "./commands/debug-run.md",
         "./commands/audit.md"
       ],
