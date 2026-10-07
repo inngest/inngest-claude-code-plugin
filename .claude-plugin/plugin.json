@@ -1,6 +1,6 @@
 {
   "name": "inngest",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "Build durable workflows and inspect Inngest Cloud apps, functions, events, runs, and traces through OAuth MCP.",
   "author": {
     "name": "Inngest, Inc.",

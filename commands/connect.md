@@ -1,48 +1,88 @@
 ---
-description: Check the Inngest Cloud connection and resolve setup issues without resetting Claude
+description: Connect or recover the Inngest plugin MCP, complete OAuth, and verify live tools without adding manual servers
 ---
 
-# Check the Inngest connection
+# Connect Inngest
 
-Help the user connect to `https://api.inngest.com/mcp`. Start with diagnosis;
-do not remove installations, credentials, or configuration automatically.
+Recover this plugin's Cloud MCP connection, then continue the user's original
+request. Do not stop at a diagnosis or repeat a failed instruction.
 
-1. Identify the host: Claude Code CLI, Desktop Code tab, or chat/Cowork. Check
-   the active Claude account/workspace and plugin version when available.
-2. Inspect the available Inngest MCP connections. In Claude Code, use
-   `claude plugin list` and `claude mcp list` from the user's project, then
-   direct the user to `/mcp` for connection details and OAuth sign-in.
-   In chat/Cowork, use the host's connector settings. Do not suggest terminal
-   commands when the host cannot run them.
-3. Check for a prior manually configured connection or another Inngest plugin
-   install. Claude Code gives local, project, and user MCP entries precedence
-   over plugin servers with the same endpoint, even under different names.
-   A local plugin install can also shadow an account-synced plugin. Report
-   the observed source and status; do not assume duplicates caused the error.
-4. Reuse a working connection to the intended Inngest account. If the winning
-   connection needs authentication, sign in to that connection. Signing in to
-   a hidden duplicate does not fix the active connection. The bundled server
-   normally appears as `plugin:inngest:inngest-cloud`; use the actual name
-   shown by the host rather than requiring that exact prefix.
-5. If the user wants to replace an obsolete manual entry, first identify its
-   exact name and scope and explain the proposed change. Prefer a reversible
-   per-server disable through `/mcp`. For removal, request approval for only
-   that entry; use `claude mcp remove --scope <scope> <name>` in Claude Code.
-   Never delete `~/.claude`, `~/.claude.json`, Desktop app data, chat history,
-   or the user's credential store. Do not read or print tokens, auth headers,
-   credential files, or Keychain contents.
-6. Start a fresh conversation after a connection or plugin change. Verify
-   using the connected MCP's `fetch_account` and `list_envs` tools. Report the
-   account and available environments. Do not use a CLI/API fallback to claim
-   the MCP works; if tools are unavailable, report that the check is blocked.
+Never add a manual MCP server, custom connector, proxy, token header, or second
+plugin install to work around this connection. Do not replace MCP calls with
+the Inngest CLI or REST API. Leave unrelated connections and history alone.
 
-For a `401`, reconnect the active connection. For a permission or scope error,
-check its grants and the selected Inngest account. A disabled Connect control
-in a managed Claude workspace may need an administrator; reinstalling does
-not change that policy. Never switch to another account or to the local Dev
-Server to get past an access error.
+## Find the active connection
 
-If unresolved, collect the host/version, plugin version and install source,
-connection name/source/status, active workspace type, and the error with
-secrets removed. Keep authorization URLs, raw logs, and tokens out of the
-report.
+Use the host's MCP status and tool discovery first. Missing tools may be deferred;
+search for the plugin's `fetch_account` and `list_envs` before diagnosing auth.
+The usual server name is `plugin:inngest:inngest-cloud`.
+
+If connected, verify the live tools below. For a transient failure, use the
+host's reconnect tool for this server and check its result before escalating
+to OAuth. Do not repeatedly reconnect a server that explicitly needs login.
+
+Check both plugin and MCP conflicts when there is evidence of shadowing. A local
+plugin can hide a synced plugin; a manual server can hide the plugin's server
+by endpoint. Report the loaded source/version, not just a directory label.
+Compare actual files before calling a version mismatch cosmetic. Use the
+host's supported update/reload controls for stale files, without changing the
+installation source. A helper from a different checkout does not establish
+which plugin is running in this session.
+
+## Start OAuth through this plugin
+
+In a local Claude Code CLI or Desktop Code session with shell access, run:
+
+```sh
+bash "${CLAUDE_PLUGIN_ROOT}/scripts/connect.sh" status
+```
+
+The helper uses Claude's `--plugin-dir` to load this exact package for the
+command. This resolves account-synced plugins that a standalone `claude mcp`
+command cannot discover. It keeps the plugin's server name and the current
+Claude profile; it does not install anything or write a manual MCP definition.
+
+If this plugin needs authentication, run:
+
+```sh
+bash "${CLAUDE_PLUGIN_ROOT}/scripts/connect.sh" login
+```
+
+Use an interactive terminal/PTY and keep it running. If the shell tool has no
+PTY but the host exposes terminal-panel tools, use that terminal. Let the user
+complete browser sign-in and consent, then collect the command's result. Do
+not say you cannot start OAuth before checking the available terminal tools.
+
+For a remote/headless terminal, append `--no-browser`. The user opens its
+authorization link and pastes the callback into that terminal, never chat.
+Do not read credentials or construct, copy, or transfer tokens yourself.
+
+Use the same execution host and Claude profile as the running session. In
+Chat/Cowork or a host without a usable CLI, use its existing plugin connection
+controls. Inspect the actual controls; do not assume `/mcp` opens a Desktop
+login dialog or that a separate Connectors-page login authenticates Code.
+
+If policy or an existing entry hides the plugin even with `--plugin-dir`,
+identify the exact blocker. For user-owned conflicts, propose disabling only
+the conflicting entry through supported controls, preserving its data. Honor
+existing approval or ask for that specific change. Do not weaken managed
+policy. Removing a remote MCP entry deletes its stored OAuth credentials, so
+never use add/login/remove as a credential-transfer trick.
+
+## Verify and resume
+
+After login succeeds, check helper status again. Use the session's reconnect
+tool for this plugin and rediscover its tools. Call `fetch_account` and
+`list_envs` through the plugin MCP, confirm the intended account, then resume
+the original request. A CLI health check alone is not an end-to-end pass.
+
+If the host cannot refresh the session's servers, request one fresh session
+only after explaining that authentication succeeded but tool loading did not.
+Do not repeat browser login when the helper is already connected. A disabled
+button alone does not prove an admin restriction; require a policy/error message.
+
+If recovery needs consent, access, or a host capability you cannot supply,
+give the exact remaining action and retain the original task for continuation.
+For a reproducible host failure, include the host/version, loaded plugin source,
+helper result, and session MCP status, without tokens or raw authorization URLs.
+Keep progress brief: action taken, observed result, and the next step.

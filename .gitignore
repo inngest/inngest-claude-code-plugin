@@ -145,3 +145,5 @@ vite.config.ts.timestamp-*
 # Local friction logs (AX testing notes, may contain redacted secrets / internal IDs)
 FRICTION.md
 FRICTION-*.md
+
+__pycache__/
