@@ -73,9 +73,7 @@ Claude Code can prefer a manually added MCP server over the plugin when both
 use the same endpoint, even with different names. Authenticate the active
 entry first. Reuse it if it works; do not reset Claude or delete your history.
 
-See [connection testing and recovery](docs/connection-testing.md) for isolated
-CLI profiles, Desktop tests, and targeted recovery. To prepare a clean CLI
-test without changing your normal profile:
+To prepare a clean CLI test without changing your normal profile:
 
 ```sh
 bash scripts/test-install.sh clean

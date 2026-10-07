@@ -53,5 +53,5 @@ Only this folder holds the test's local settings and history. Account-synced
 plugins and organization policies can still apply after login; use a separate
 Claude test account for a clean directory-install test. This fixture tests the
 local marketplace package, not directory distribution or Claude Desktop.
-See docs/connection-testing.md for those checks. No OAuth test has run yet.
+No OAuth test has run yet.
 EOF

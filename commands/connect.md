@@ -45,4 +45,4 @@ Server to get past an access error.
 If unresolved, collect the host/version, plugin version and install source,
 connection name/source/status, active workspace type, and the error with
 secrets removed. Keep authorization URLs, raw logs, and tokens out of the
-report. See `docs/connection-testing.md` for isolated reproduction steps.
+report.
