@@ -19,7 +19,7 @@ local commands require a coding host.
 
 - **14 skills** covering setup, events, durable functions, steps, flow control, middleware, realtime, AI agents, CLI/dev-server workflows, API CLI operations, REST API fallback, brownfield audits, and v3→v4 migration — Claude Code loads the right one automatically based on what you're building.
 - **Cloud OAuth MCP.** Connect your account in the host and use `inngest-cloud` to inspect deployed apps, functions, runs, traces, events, and Insights. CLI and REST skills remain available for terminal or raw HTTP work.
-- **`/inngest:connect` command** — check the active Cloud connection, guide OAuth sign-in, and diagnose prior MCP installs without resetting Claude. Included in the v0.4.1 candidate.
+- **`/inngest:connect` command** — recover the plugin connection and start OAuth without adding manual MCP servers. A session hook directs Claude to recovery when Cloud tools are unavailable.
 - **`/inngest:debug-run` command** — hand Claude Code a run ID and it pulls the trace, explains the failing step, and fixes the code when requested.
 - **`/inngest:audit` command** — point Claude Code at an existing codebase and it finds durability gaps (polling loops, manual retries, fire-and-forget promises, queue libraries), prioritizes them, and proposes Inngest refactors.
 - **Cloud MCP connection** bundled by default, with an optional local Dev Server connection for Claude Code.
@@ -68,10 +68,10 @@ If a prior connection exists, see the recovery steps below.
 
 ### Connection problems or prior installs
 
-Run `/inngest:connect` with the v0.4.1 candidate, or inspect `/mcp` directly.
+Run `/inngest:connect`. It uses this plugin's OAuth helper and verifies live tools.
 Claude Code can prefer a manually added MCP server over the plugin when both
-use the same endpoint, even with different names. Authenticate the active
-entry first. Reuse it if it works; do not reset Claude or delete your history.
+use the same endpoint, even with different names. Check the active entry's
+source before changing it; do not reset Claude or delete your history.
 
 To prepare a clean CLI test without changing your normal profile:
 
