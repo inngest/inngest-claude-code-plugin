@@ -28,56 +28,62 @@ local commands require a coding host.
 
 ## Installation
 
-### Claude directory
+### Claude Code CLI
 
-Install Inngest from [Claude's directory](https://claude.ai/directory), then
-connect your Inngest account in the plugin's connector controls. You do not need
-to add a second custom Inngest connector. In Claude Code, sign in with the same
-Claude subscription account and check `/plugin` and `/mcp` for synced installs.
-
-### Claude Code repository marketplace
-
-Use this alternative if the directory install is unavailable. Choose one
-installation source; a local install can shadow an account-synced copy.
-
-```
-/plugin marketplace add inngest/inngest-claude-code-plugin
-/plugin install inngest@inngest-claude-code-plugin
-```
-
-### Local clone
+Install the published plugin from Anthropic's directory:
 
 ```bash
-git clone https://github.com/inngest/inngest-claude-code-plugin.git
-cd your-project/
-claude --plugin-dir /path/to/inngest-claude-code-plugin
+claude plugin install inngest@anthropic-plugin-directory
 ```
+
+Or, inside Claude Code:
+
+```text
+/plugin install inngest@anthropic-plugin-directory
+```
+
+No separate marketplace setup is needed. Start a new Claude Code session,
+run `/mcp`, and select `plugin:inngest:inngest-cloud` to sign in. Complete OAuth
+in your browser with the Inngest account and permissions you want Claude to use.
+
+### Claude desktop and web
+
+1. Find and add **Inngest** in [Claude's directory](https://claude.ai/directory).
+2. Open the plugin's **Connectors** tab and add the Inngest connector if needed.
+3. Connect your Inngest account and complete OAuth.
+
+On Team and Enterprise plans, an Owner adds the connector for the organization
+before members connect. See [Claude's bundled connector guide](https://claude.com/docs/plugins/overview#bundled-connectors).
+
+Directory installs sync to Claude Code when you use the same Claude account
+and organization. Use that synced install or the CLI install above; a local
+install can take precedence over the synced copy. CLI installs stay on that
+machine and do not install the plugin in Claude desktop or web.
+
+Cloud MCP is bundled with the plugin. You do not need a second custom Cloud
+connector or a manual `claude mcp add` entry for it.
 
 ## Quick start
 
-1. Install the plugin from the directory or this repository's marketplace.
-2. Open `/mcp` and complete OAuth sign-in for the Inngest Cloud connection.
-3. Ask: "Use Inngest MCP to show my account and environments."
+After installing and connecting, ask:
+
+```text
+Use the Inngest plugin to show my account and environments.
+```
 
 For local development, start your app and `inngest dev`, then add the optional
 local MCP connection described below. Coding skills remain available for
 building workflows, auditing code, and SDK migrations.
 
-For hosted Claude, complete sign-in through the plugin's connector controls.
-If a prior connection exists, see the recovery steps below.
-
 ### Connection problems or prior installs
 
-Run `/inngest:connect`. It uses this plugin's OAuth helper and verifies live tools.
+In Claude Code, run `/inngest:connect`. It uses the plugin's OAuth helper and
+verifies your account and environments through live MCP tools. In Claude chat,
+use the plugin's **Connectors** tab to connect or reconnect.
+
 Claude Code can prefer a manually added MCP server over the plugin when both
 use the same endpoint, even with different names. Check the active entry's
 source before changing it; do not reset Claude or delete your history.
-
-To prepare a clean CLI test without changing your normal profile:
-
-```sh
-bash scripts/test-install.sh clean
-```
 
 ## Skills
 
@@ -228,7 +234,24 @@ copy, and reviewer tests.
 
 The skills in this plugin are mirrored from [`inngest/inngest-skills`](https://github.com/inngest/inngest-skills) — that's where they're authored and where skills.sh users install them. This plugin pulls them in via `scripts/sync-skills.sh` so the Claude Code experience stays in lockstep with the skills.sh experience.
 
-## Eval harness
+## Local development and testing
+
+To test changes to the plugin, load a local clone:
+
+```bash
+git clone https://github.com/inngest/inngest-claude-code-plugin.git
+cd your-project/
+claude --plugin-dir /path/to/inngest-claude-code-plugin
+```
+
+From the plugin repository, prepare a clean CLI test without changing your
+normal profile:
+
+```sh
+bash scripts/test-install.sh clean
+```
+
+### Eval harness
 
 Inside `eval/` is a prompt catalog and runner you can use to verify the plugin is actually steering Claude Code on real Inngest-shaped tasks.
 
@@ -250,7 +273,7 @@ We're improving the plugin based on real usage:
 
 ## Roadmap
 
-See [ROADMAP.md](./ROADMAP.md) for the v0.x → v1.0 plan: more skills, slash commands, agents, migrators between SDK majors, and the path to the official Anthropic plugin marketplace.
+See [ROADMAP.md](./ROADMAP.md) for planned skills, commands, agents, and SDK migrations.
 
 ## License
 
